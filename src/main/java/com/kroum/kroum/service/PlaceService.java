@@ -1,12 +1,14 @@
 package com.kroum.kroum.service;
 
 import com.kroum.kroum.dto.request.PlaceSearchRequestDto;
-import com.kroum.kroum.dto.response.ContentIdDto;
-import com.kroum.kroum.dto.response.PlaceSearchResponseDto;
+import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.exception.InternalServerException;
 import com.kroum.kroum.exception.InvalidRequestException;
+import com.kroum.kroum.repository.BookmarkRepository;
 import com.kroum.kroum.repository.PlaceLanguageRepository;
 import com.kroum.kroum.repository.PlaceRepository;
+import com.kroum.kroum.repository.ReviewRepository;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -24,6 +26,8 @@ public class PlaceService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final PlaceRepository placeRepository;
     private final PlaceLanguageRepository placeLanguageRepository;
+    private final ReviewRepository reviewRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     // 프론트로부터 받은 검색 요청 DTO를 추가 정보를 덧붙여서 AI 서버에게 ID 리턴해달라고 요청하는 메서드
     public List<ContentIdDto> getRecommendedPlaceIds(PlaceSearchRequestDto request) {
@@ -76,6 +80,34 @@ public class PlaceService {
                 .toList();
 
         return placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
+    }
+
+    // 해당 장소에 대한 리뷰 목록을 들고오는 서비스
+    public PlaceReviewsResponseDto getReviewsByPlaceId(Long placeId) {
+        Double avg = getAverageRating(placeId);
+        Long totalCount = reviewRepository.countByPlace_PlaceId(placeId);
+        List<PlaceReviewDto> placeReviews = reviewRepository.findDtoByPlaceId(placeId);
+        PlaceReviewsResponseDto responseDto = new PlaceReviewsResponseDto(totalCount, avg, placeReviews);
+
+        return responseDto;
+
+    }
+
+    public double getAverageRating(Long placeId) {
+        Double avg = reviewRepository.findAverageRatingByPlaceId(placeId);
+        return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0; // 소수점 1자리 반올림
+    }
+
+    public List<>
+
+    public boolean isBookmarked(HttpSession session, Long placeId) {
+
+        if (session == null) return false;
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return false;
+
+        return bookmarkRepository.existsByUser_UserIdAndPlace_PlaceId(userId, placeId);
     }
 
 }
