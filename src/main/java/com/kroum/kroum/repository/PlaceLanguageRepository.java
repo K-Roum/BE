@@ -22,7 +22,7 @@ FROM PlaceLanguage pl
 JOIN pl.place p
 WHERE pl.place.placeId = :placeId
 """)
-    Optional<PlaceSearchResponseDto> findDtoByPlaceIdAndLanguage(Long placeId);
+    Optional<PlaceSearchResponseDto> findDtoByPlaceId(Long placeId);
 
     @Query("""
 SELECT new com.kroum.kroum.dto.response.PlaceSearchResponseDto(

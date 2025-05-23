@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Tag(name = "Place API", description = "장소 검색, 검색 결과 등 제공 해주는 컨트롤러")
 @RestController
@@ -53,7 +52,7 @@ public class PlaceController {
                     responseCode = "200",
                     description = "성공 시 통합 상세 정보 반환",
                     content = @Content
-                            (schema = @Schema(implementation = PlaceDetailsWithRecommendationsResponseDto.class))
+                            (schema = @Schema(implementation = PlaceDetailsWithNearbyPlacesResponseDto.class))
             ),
             @ApiResponse(responseCode = "400", description = "InvalidRequestException : 잘못된 요청 에러",
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
@@ -61,7 +60,7 @@ public class PlaceController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @GetMapping("/{placeId}/with-everything")
-    public ResponseEntity<PlaceDetailsWithRecommendationsResponseDto> getPlaceDetailsWithEverything(
+    public ResponseEntity<PlaceDetailsWithNearbyPlacesResponseDto> getPlaceDetailsWithEverything(
             @PathVariable Long placeId,
             @RequestParam String languageCode,
             HttpSession session
@@ -83,7 +82,7 @@ public class PlaceController {
     }
 
 
-    @Operation(summary = "추천 장소 리스트 요청", description = "백엔드 -> api만 도는 내부 api")
+    @Operation(summary = "추천 장소 리스트 요청", description = "")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "성공시 추천 장소 리스트 정보 반환",
                     content = @Content
