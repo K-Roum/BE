@@ -20,5 +20,5 @@ public class PlaceDetailsWithNearbyPlacesResponseDto {
 
     // 이거는 3개 반환해주는게 좋을 것 같음
     @Schema(description = "주변 장소 정보 리스트", example = "창덕궁 정보, 뭐 주변 맛집 정보 등")
-    private List<PlaceSearchResponseDto> recommendations;
+    private List<NearbyPlaceResponseDto> recommendations;
 }

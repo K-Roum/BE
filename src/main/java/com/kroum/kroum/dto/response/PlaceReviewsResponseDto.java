@@ -24,5 +24,4 @@ public class PlaceReviewsResponseDto {
     @Schema(description = "리뷰 리스트")
     private List<PlaceReviewDto> placesReviews;
 
-
 }
