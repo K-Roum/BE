@@ -64,21 +64,12 @@ public class PlaceController {
             @PathVariable Long placeId,
             @RequestParam String languageCode,
             HttpSession session
-    ) {
-        /*// 상세 정보(리뷰 갯수, 리뷰 평점, 찜 갯수, 내 찜 여부)
-        PlaceDetailsResponseDto details = placeService.getPlaceDetails(placeId, languageCode, user);
+    )
+    {
+        PlaceDetailsWithNearbyPlacesResponseDto response =
+                placeService.getPlaceDetailsWithNearbyPlaces(placeId, languageCode, session);
 
-        // 타인의 리뷰 리스트 (타인 닉네임, 작성일자, 별점, 텍스트)
-        List<ReviewByPlaceIdResponseDto> reviews = reviewService.getReviewsByPlaceId(placeId);
-
-        // 추천 장소 리스트 (추천 장소 관련 데이터들)
-        List<PlaceSearchResponseDto> recommendations = placeService.getRelatedPlaces(placeId, languageCode);
-*/
-        // 응답 객체 생성
-        /*PlaceDetailsWithRecommendationsResponseDto response =
-                new PlaceDetailsWithRecommendationsResponseDto(details, reviews, recommendations);*/
-
-        return ResponseEntity.ok(null);//(response);
+        return ResponseEntity.ok(response);
     }
 
 
