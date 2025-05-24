@@ -36,6 +36,9 @@ public class PlaceSearchResponseDto {
     @Schema(description = "주소", example = "서울 종로구 사직로 161")
     private String address;
 
-    //@Schema(description = "찜 여부", example = "true")
-    //private boolean bookmarked;
+    @Schema(description = "찜 여부", example = "true")
+    private boolean bookmarked;
+
+    @Schema(description = "장소 id", example = "123456")
+    private Long placeId;
 }
