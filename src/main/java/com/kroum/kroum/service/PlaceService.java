@@ -19,7 +19,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -80,14 +82,31 @@ public class PlaceService {
      */
     // 이거 넘겨줄 때 찜 여부도 넘겨줘야 할 것 같은데 그럼 Dto 수정 할 필요가 있어 보임
     // 아아아아악!!!!!!!!!!!
-    public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids) {
+    public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
+        Long userId = getLoginUserId(session);
 
         List<Long> placeIds = ids.stream()
                 .map(ContentIdDto::getContentId)
                 .toList();
 
-        return placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
+        // 북마크된 placeId 리스트 가져오기
+        Set<Long> bookmarkedPlaceIds = (userId != null)
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of(); // 로그인 안 했으면 비어 있는 Set
+
+        // 원래 장소 조회
+        List<PlaceSearchResponseDto> rawList = placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
+
+        // 북마크 여부 추가해서 DTO 재조립
+        return rawList.stream()
+                .map(dto -> {
+                    boolean isBookmarked = bookmarkedPlaceIds.contains(dto.getPlaceId());
+                    dto.setBookmarked(isBookmarked); // 세터로 설정
+                    return dto;
+                })
+                .toList();
     }
+
 
     /**
      * 해당 장소에 대한 리뷰 목록을 들고 온다.
@@ -119,10 +138,7 @@ public class PlaceService {
      */
     public boolean isBookmarked(HttpSession session, Long placeId) {
 
-        if (session == null) return false;
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return false;
+        Long userId = getLoginUserId(session);
 
         return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
@@ -144,7 +160,7 @@ public class PlaceService {
     //public List<>
 
 
-    public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+    /*public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
         // 기준 장소의 위경도 가져오기
         Place originPlace = placeRepository.findById(placeId)
                 .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
@@ -157,8 +173,7 @@ public class PlaceService {
                 originPlaceLatitude, originPlaceLongitude, langCode, placeId
         );
 
-        // 사용자 로그인 여부 확인
-        Long userId = session != null ? (Long) session.getAttribute("userId") : null;
+        Long userId = getLoginUserId(session);
 
         // 결과 매핑
         return raw.stream()
@@ -176,7 +191,37 @@ public class PlaceService {
                     );
                 })
                 .toList();
+    }*/
+
+    public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+        Place originPlace = placeRepository.findById(placeId)
+                .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
+
+        List<NearbyPlaceProjection> raw = placeLanguageRepository.findNearbyPlacesWithinDistance(
+                originPlace.getLatitude(), originPlace.getLongitude(), langCode, placeId
+        );
+
+        Long userId = getLoginUserId(session);
+
+        Set<Long> bookmarkedPlaceIds = userId != null
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of();
+
+        return raw.stream()
+                .map(p -> {
+                    boolean isBookmarked = bookmarkedPlaceIds.contains(p.getPlaceId());
+                    return new NearbyPlaceResponseDto(
+                            new PlaceSearchResponseDto(
+                                    p.getLatitude(), p.getLongitude(), p.getFirstImageUrl(),
+                                    p.getPlaceName(), p.getDescription(), p.getAddress(),
+                                    isBookmarked, p.getPlaceId()
+                            ),
+                            p.getDistance()
+                    );
+                })
+                .toList();
     }
+
 
     public PlaceDetailsWithNearbyPlacesResponseDto getPlaceDetailsWithNearbyPlaces(Long placeId, String langCode, HttpSession session) {
         // 1. 리뷰 정보 수집
@@ -197,7 +242,11 @@ public class PlaceService {
         return new PlaceDetailsWithNearbyPlacesResponseDto(details, nearby);
     }
 
+    public Long getLoginUserId(HttpSession session) {
+        if (session == null) return null;
 
+        return (Long) session.getAttribute("userId");
+    }
 
 
 

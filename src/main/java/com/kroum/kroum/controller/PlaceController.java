@@ -39,9 +39,10 @@ public class PlaceController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @PostMapping("/search")
-    public ResponseEntity<List<PlaceSearchResponseDto>> searchPlace(@RequestBody PlaceSearchRequestDto request) {
+    public ResponseEntity<List<PlaceSearchResponseDto>> searchPlace(@RequestBody PlaceSearchRequestDto request,
+                                                                    HttpSession session) {
         List<ContentIdDto> ids = placeService.getRecommendedPlaceIds(request);
-        List<PlaceSearchResponseDto> places = placeService.getPlacesByIds(ids);
+        List<PlaceSearchResponseDto> places = placeService.getPlacesByIds(ids, session);
         return ResponseEntity.ok(places);
 
     }
@@ -72,7 +73,7 @@ public class PlaceController {
         return ResponseEntity.ok(response);
     }
 
-
+/*
     @Operation(summary = "추천 장소 리스트 요청", description = "")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "성공시 추천 장소 리스트 정보 반환",
@@ -95,7 +96,7 @@ public class PlaceController {
     ) {
         // 실제 구현에서는 서비스에서 id, languageCode 파라미터로 받은 걸 db에서 조회하도록 하고
         // 각 받아온 객체들 dto list 담은거 쓰도록 한다.
-        List<PlaceSearchResponseDto> places = List.of(
+        *//*List<PlaceSearchResponseDto> places = List.of(
                 new PlaceSearchResponseDto(
                         37.5665,
                         126.9780,
@@ -115,7 +116,7 @@ public class PlaceController {
                         "설명2",
                         "주소 2"
                 )
-        );
+        );*//*
 
         return ResponseEntity.ok(places);
     }
@@ -137,6 +138,6 @@ public class PlaceController {
         List<PlaceSearchResponseDto> result = placeService.getPlacesByIds(ids);
 
         return ResponseEntity.ok(result);
-    }
+    }*/
 
 }
