@@ -2,12 +2,14 @@ package com.kroum.kroum.service;
 
 import com.kroum.kroum.dto.request.PlaceSearchRequestDto;
 import com.kroum.kroum.dto.response.*;
+import com.kroum.kroum.entity.Place;
 import com.kroum.kroum.exception.InternalServerException;
 import com.kroum.kroum.exception.InvalidRequestException;
 import com.kroum.kroum.repository.BookmarkRepository;
 import com.kroum.kroum.repository.PlaceLanguageRepository;
 import com.kroum.kroum.repository.PlaceRepository;
 import com.kroum.kroum.repository.ReviewRepository;
+import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,8 +33,8 @@ public class PlaceService {
 
     // 프론트로부터 받은 검색 요청 DTO를 추가 정보를 덧붙여서 AI 서버에게 ID 리턴해달라고 요청하는 메서드
     public List<ContentIdDto> getRecommendedPlaceIds(PlaceSearchRequestDto request) {
-        /*String url = "http://127.0.0.1:5000/ai/search";*/
-        String url = "http://202.31.202.172:80/jem/ai/search";
+        String url = "http://127.0.0.1:5000/ai/search";
+        //String url = "http://202.31.202.172:80/jem/ai/search";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -73,6 +75,11 @@ public class PlaceService {
         }
     }
 
+    /*
+
+     */
+    // 이거 넘겨줄 때 찜 여부도 넘겨줘야 할 것 같은데 그럼 Dto 수정 할 필요가 있어 보임
+    // 아아아아악!!!!!!!!!!!
     public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids) {
 
         List<Long> placeIds = ids.stream()
@@ -82,7 +89,12 @@ public class PlaceService {
         return placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
     }
 
-    // 해당 장소에 대한 리뷰 목록을 들고오는 서비스
+    /**
+     * 해당 장소에 대한 리뷰 목록을 들고 온다.
+     * 들고 오는 정보는 장소에 대한 리뷰 갯수, 리뷰 평균 평점, 리뷰 리스트(닉네임, 리뷰 내용, 리뷰 별점, 작성 일시)
+     * @param placeId
+     * @return
+     */
     public PlaceReviewsResponseDto getReviewsByPlaceId(Long placeId) {
         Double avg = getAverageRating(placeId);
         Long totalCount = reviewRepository.countByPlace_PlaceId(placeId);
@@ -98,8 +110,13 @@ public class PlaceService {
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0; // 소수점 1자리 반올림
     }
 
-    public List<>
-
+    /**
+     * 로그인된 사용자인 경우, 해당 사용자가 특정 장소를 찜했는지 여부를 반환한다.
+     *
+     * @param session 로그인된 사용자의 세션. 세션에 userId가 없으면 로그인되지 않은 상태로 간주함
+     * @param placeId 찜 여부를 확인할 장소의 ID
+     * @return 사용자가 해당 장소를 찜했다면 true, 아니면 false
+     */
     public boolean isBookmarked(HttpSession session, Long placeId) {
 
         if (session == null) return false;
@@ -107,7 +124,81 @@ public class PlaceService {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return false;
 
-        return bookmarkRepository.existsByUser_UserIdAndPlace_PlaceId(userId, placeId);
+        return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
+
+    /**
+     *
+     * @param session
+     * @param placeId
+     * @return
+     */
+    /*public PlaceDetailsResponseDto getPlaceDetails(HttpSession session, Long placeId) {
+
+    }*/
+
+    /**
+     * 내가 선택한 장소로부터 인근에 있는 장소 리스트를 반환한다.
+     * 최대 반경은 20km, 거리를 계산해서 프론트단에서 1 3 5 10 20 등으로 나누어 지도 확대 축소 기능을 넣어서 출력해주도록 한다.
+     */
+    //public List<>
+
+
+    public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+        // 기준 장소의 위경도 가져오기
+        Place originPlace = placeRepository.findById(placeId)
+                .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
+
+        double originPlaceLatitude = originPlace.getLatitude();
+        double originPlaceLongitude = originPlace.getLongitude();
+
+        // 주변 장소 쿼리 실행
+        List<NearbyPlaceProjection> raw = placeLanguageRepository.findNearbyPlacesWithinDistance(
+                originPlaceLatitude, originPlaceLongitude, langCode, placeId
+        );
+
+        // 사용자 로그인 여부 확인
+        Long userId = session != null ? (Long) session.getAttribute("userId") : null;
+
+        // 결과 매핑
+        return raw.stream()
+                .map(p -> {
+                    boolean isBookmarked = false;
+                    if (userId != null)
+                        isBookmarked = bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, p.getPlaceId());
+
+                    return new NearbyPlaceResponseDto(
+                            new PlaceSearchResponseDto(
+                                    p.getLatitude(), p.getLongitude(), p.getFirstImageUrl(),
+                                    p.getPlaceName(), p.getDescription(), p.getAddress()
+                            ),
+                            p.getDistance()
+                    );
+                })
+                .toList();
+    }
+
+    public PlaceDetailsWithNearbyPlacesResponseDto getPlaceDetailsWithNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+        // 1. 리뷰 정보 수집
+        PlaceReviewsResponseDto reviews = getReviewsByPlaceId(placeId);
+
+        // 2. 북마크 정보 수집
+        int bookmarkCount = bookmarkRepository.countByPlace_PlaceId(placeId);
+        boolean isBookmarked = isBookmarked(session, placeId);
+        PlaceBookmarkDto bookmark = new PlaceBookmarkDto(bookmarkCount, isBookmarked);
+
+        // 3. 상세 정보 조립
+        PlaceDetailsResponseDto details = new PlaceDetailsResponseDto(reviews, bookmark);
+
+        // 4. 주변 장소 리스트 생성
+        List<NearbyPlaceResponseDto> nearby = getNearbyPlaces(placeId, langCode, session);
+
+        // 5. 최종 응답 조립
+        return new PlaceDetailsWithNearbyPlacesResponseDto(details, nearby);
+    }
+
+
+
+
 
 }

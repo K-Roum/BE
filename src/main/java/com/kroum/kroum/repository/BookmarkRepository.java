@@ -6,7 +6,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
-    boolean existsByUser_UserIdAndPlace_PlaceId(Long userId, Long placeId);
+    boolean existsByUser_IdAndPlace_PlaceId(Long userId, Long placeId);
+
+    int countByPlace_PlaceId(Long placeId);
 
 
 }
