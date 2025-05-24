@@ -33,8 +33,8 @@ public class PlaceService {
 
     // 프론트로부터 받은 검색 요청 DTO를 추가 정보를 덧붙여서 AI 서버에게 ID 리턴해달라고 요청하는 메서드
     public List<ContentIdDto> getRecommendedPlaceIds(PlaceSearchRequestDto request) {
-        String url = "http://127.0.0.1:5000/ai/search";
-        //String url = "http://202.31.202.172:80/jem/ai/search";
+        //String url = "http://127.0.0.1:5000/ai/search";
+        String url = "http://202.31.202.172:80/jem/ai/search";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
