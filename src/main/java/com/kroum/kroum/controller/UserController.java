@@ -2,6 +2,8 @@ package com.kroum.kroum.controller;
 
 import com.kroum.kroum.dto.request.*;
 import com.kroum.kroum.dto.response.*;
+import com.kroum.kroum.repository.UserRepository;
+import com.kroum.kroum.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +20,14 @@ import java.util.List;
 
 @Tag(name = "User API", description = "회원가입, 로그인, 마이페이지 조회 등에 사용하는 컨트롤러")
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
-    @Operation(summary = "회원가입 요청", description = "회원가입 양식을 채워서 회원가입을 요청")
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    @Operation(summary = "회원가입 요청 / 구현완료", description = "회원가입 양식을 채워서 회원가입을 요청")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "회원가입 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
@@ -31,13 +38,15 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDto> signUp(@RequestBody SignupRequestDto request) {
         // 실제 구현에서는 서비스 로직을 호출하고 서비스 로직에서 받아온 결과를 바탕으로 ApiResponseDto를 넘겨준다
+        userService.signUp(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new ApiResponseDto(true, "회원가입이 완료되었습니다."));
     }
 
 
-    @Operation(summary = "로그인 요청", description = "아이디, 비밀번호를 제시해서 로그인을 요청")
+    @Operation(summary = "로그인 요청 / 구현완료", description = "아이디, 비밀번호를 제시해서 로그인을 요청")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
@@ -45,16 +54,21 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseDto> login(@RequestBody LoginRequestDto request) {
+    public ResponseEntity<ApiResponseDto> login(@RequestBody LoginRequestDto request,
+                                                HttpSession session) {
 
-        return ResponseEntity
+        userService.login(request, session);
+
+        /*return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new ApiResponseDto(true, "로그인에 성공하였습니다."));
+                .body(new ApiResponseDto(true, "로그인에 성공하였습니다."));*/
+
+        return new ResponseEntity<>(new ApiResponseDto(true, "세션 ID: " + session.getId()), HttpStatus.OK);
 
     }
 
 
-    @Operation(summary = "로그아웃 요청", description = "로그인 된 사람에 한정해 로그아웃 요청")
+    @Operation(summary = "로그아웃 요청 / 구현완료", description = "로그인 된 사람에 한정해 로그아웃 요청")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그아웃 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
@@ -63,7 +77,7 @@ public class UserController {
     })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponseDto> logout(HttpSession session) {
-        session.invalidate(); // 이건 서비스로직에서 구현해야할 내용
+        userService.logout(session);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -186,43 +200,53 @@ public class UserController {
     }
 
 
-    @Operation(summary = "이메일 중복 확인 요청", description = "제시한 이메일이 DB에 중복 존재하는지 확인")
+    @Operation(summary = "이메일 중복 확인 요청 / 구현완료", description = "제시한 이메일이 DB에 중복 존재하는지 확인")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "중복 없음 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
             @ApiResponse(responseCode = "409", description = "중복된 이메일"),
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
-    @GetMapping("/check-email/{email}")
+    @GetMapping("/check-email")
     public ResponseEntity<ApiResponseDto> checkEmail(@RequestParam("email") String email) {
+        if (userService.isDuplicateEmail(email))
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ApiResponseDto(false, "중복된 이메일입니다."));
 
         return ResponseEntity.ok(new ApiResponseDto(true, "사용가능한 이메일입니다."));
     }
 
-
-    @Operation(summary = "닉네임 중복 확인 요청", description = "제시한 닉네임이 DB에 중복 존재하는지 확인")
+    @Operation(summary = "닉네임 중복 확인 요청 / 구현완료", description = "제시한 닉네임이 DB에 중복 존재하는지 확인")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "중복 없음 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
             @ApiResponse(responseCode = "409", description = "중복된 닉네임"),
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
-    @GetMapping("/check-nickname/{nickname}")
+    @GetMapping("/check-nickname")
     public ResponseEntity<ApiResponseDto> checkNickname(@RequestParam("nickname") String nickname) {
+        if (userService.isDuplicateNickname(nickname))
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ApiResponseDto(false, "중복된 닉네임입니다."));
 
         return ResponseEntity.ok(new ApiResponseDto(true, "사용가능한 닉네임입니다."));
     }
 
-
-    @Operation(summary = "아이디 중복 확인 요청", description = "제시한 아이디가 DB에 중복 존재하는지 확인")
+    @Operation(summary = "아이디 중복 확인 요청 / 구현완료", description = "제시한 아이디가 DB에 중복 존재하는지 확인")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "중복 없음 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
             @ApiResponse(responseCode = "409", description = "중복된 아이디"),
             @ApiResponse(responseCode = "500", description = "서버 에러")
     })
-    @GetMapping("/check-loginId/{loginId}")
+    @GetMapping("/check-loginId")
     public ResponseEntity<ApiResponseDto> checkLoginId(@RequestParam("loginId") String loginId) {
+        if (userService.isDuplicateLoginId(loginId))
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ApiResponseDto(false, "중복된 아이디입니다."));
 
         return ResponseEntity.ok(new ApiResponseDto(true, "사용가능한 아이디입니다."));
     }

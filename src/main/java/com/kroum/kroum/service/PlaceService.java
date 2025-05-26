@@ -10,6 +10,7 @@ import com.kroum.kroum.repository.PlaceLanguageRepository;
 import com.kroum.kroum.repository.PlaceRepository;
 import com.kroum.kroum.repository.ReviewRepository;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
+import com.kroum.kroum.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -83,7 +84,7 @@ public class PlaceService {
     // 이거 넘겨줄 때 찜 여부도 넘겨줘야 할 것 같은데 그럼 Dto 수정 할 필요가 있어 보임
     // 아아아아악!!!!!!!!!!!
     public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
-        Long userId = getLoginUserId(session);
+        Long userId = SessionUtil.getLoginUserId(session);
 
         List<Long> placeIds = ids.stream()
                 .map(ContentIdDto::getContentId)
@@ -138,7 +139,7 @@ public class PlaceService {
      */
     public boolean isBookmarked(HttpSession session, Long placeId) {
 
-        Long userId = getLoginUserId(session);
+        Long userId = SessionUtil.getLoginUserId(session);
 
         return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
@@ -201,7 +202,7 @@ public class PlaceService {
                 originPlace.getLatitude(), originPlace.getLongitude(), langCode, placeId
         );
 
-        Long userId = getLoginUserId(session);
+        Long userId = SessionUtil.getLoginUserId(session);
 
         Set<Long> bookmarkedPlaceIds = userId != null
                 ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
@@ -241,13 +242,6 @@ public class PlaceService {
         // 5. 최종 응답 조립
         return new PlaceDetailsWithNearbyPlacesResponseDto(details, nearby);
     }
-
-    public Long getLoginUserId(HttpSession session) {
-        if (session == null) return null;
-
-        return (Long) session.getAttribute("userId");
-    }
-
 
 
 }
