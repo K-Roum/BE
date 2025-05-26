@@ -26,7 +26,7 @@ public class PlaceController {
 
     private final PlaceService placeService;
 
-    @Operation(summary = "관광지 검색", description = "문장형으로 관광지를 검색함")
+    @Operation(summary = "관광지 검색 / 구현완료", description = "문장형으로 관광지를 검색함")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -47,7 +47,7 @@ public class PlaceController {
 
     }
 
-    @Operation(summary = "장소 상세 통합 요청", description = "장소 클릭 시 상세 정보 + 리뷰 + 주변 장소 리스트 반환")
+    @Operation(summary = "장소 상세 통합 요청 / 구현완료", description = "장소 클릭 시 상세 정보 + 리뷰 + 주변 장소 리스트 반환")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
