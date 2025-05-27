@@ -87,6 +87,8 @@ public class UserService {
         log.info("[로그아웃 성공] userId: {}", userId);
     }*/
 
+
+    // 추후 디버깅용 로그 제거하기
     public void logout(HttpSession session) {
         if (session == null) {
             log.info("[로그아웃 요청] 세션 없음 - 이미 로그아웃 상태일 수 있음");
