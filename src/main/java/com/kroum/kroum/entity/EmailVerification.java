@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Table(name = "email_verification")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmailVerification {
@@ -18,9 +19,12 @@ public class EmailVerification {
     @Column(name = "email_verification_id")
     private Long id;
 
-    @ManyToOne
+    /*@ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user;*/
+
+    @Column(name = "email", nullable = false)
+    private String email; // User 없이 이메일만 저장
 
     @Column(name = "verification_code", length = 30, nullable = false)
     private String verificationCode;
@@ -31,6 +35,6 @@ public class EmailVerification {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at", nullable = true)
     private LocalDateTime expiresAt;
 }
