@@ -20,13 +20,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/users/login",
+                                "/users/*",
                                 "/users/logout",
                                 "/users/signup",
                                 "/users/check-*",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-resources/**"
+                                "/swagger-resources/**",
+                                "/email-verification/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
