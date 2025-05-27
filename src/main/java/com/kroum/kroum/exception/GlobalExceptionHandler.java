@@ -52,4 +52,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponseDto(exception.getMessage(), 401));
     }
+
+    @ExceptionHandler(EmailSendFailedException.class)
+    public ResponseEntity<ErrorResponseDto> handleEmailSendFailedException(EmailSendFailedException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDto(exception.getMessage(), 500));
+    }
 }
