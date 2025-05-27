@@ -16,20 +16,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(Customizer.withDefaults()) // WebMvcConfigurer와 연동됨
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())       // CSRF 비활성화
+                .cors(Customizer.withDefaults())    // CORS 설정 허용
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/users/*",
-                                "/users/logout",
-                                "/users/signup",
-                                "/users/check-*",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/email-verification/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()   // ✅ 모든 요청 허용
                 )
                 .build();
     }
