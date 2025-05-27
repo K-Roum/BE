@@ -4,6 +4,8 @@ import com.kroum.kroum.dto.request.EmailVerificationCodeRequestDto;
 import com.kroum.kroum.dto.request.EmailVerificationRequestDto;
 import com.kroum.kroum.dto.request.ReviewCreateRequestDto;
 import com.kroum.kroum.dto.response.ApiResponseDto;
+import com.kroum.kroum.exception.InvalidRequestException;
+import com.kroum.kroum.service.EmailVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,13 +13,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "EmailVerification API", description = "이메일 인증 관련 컨트롤러")
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/email-verification")
 public class EmailVerificationController {
+
+    private final EmailVerificationService emailVerificationService;
 
     @Operation(summary = "이메일 인증 발송 요청", description = "버튼을 누르면 이메일로 인증 코드 발송")
     @ApiResponses({
@@ -27,8 +33,7 @@ public class EmailVerificationController {
     })
     @PostMapping
     public ResponseEntity<ApiResponseDto> sendVerificationEmail(@RequestBody EmailVerificationRequestDto request) {
-        // 서비스 로직 구현
-
+        emailVerificationService.sendVerificationEmail(request);
 
         return ResponseEntity.ok(new ApiResponseDto(true, "이메일로 인증 코드가 발송되었습니다."));
     }
@@ -43,8 +48,11 @@ public class EmailVerificationController {
     })
     @PostMapping("/verify")
     public ResponseEntity<ApiResponseDto> verifyCode(@RequestBody EmailVerificationCodeRequestDto request) {
-        // 코드 확인 로직
+        // 유효 기간 설정은 추후 구현 하든가 하자 지금 방식으로도 크게 뭐 문제는 없네..
+        boolean validation = emailVerificationService.isVerificationCodeValid(request);
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "인증이 완료되었습니다."));
+        if (!validation) return ResponseEntity.ok(new ApiResponseDto(false, "인증 실패"));
+
+        return ResponseEntity.ok(new ApiResponseDto(true, "인증 완료"));
     }
 }
