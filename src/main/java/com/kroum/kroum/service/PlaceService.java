@@ -78,11 +78,6 @@ public class PlaceService {
         }
     }
 
-    /*
-
-     */
-    // 이거 넘겨줄 때 찜 여부도 넘겨줘야 할 것 같은데 그럼 Dto 수정 할 필요가 있어 보임
-    // 아아아아악!!!!!!!!!!!
     public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
         Long userId = SessionUtil.getLoginUserId(session);
 
@@ -143,56 +138,6 @@ public class PlaceService {
 
         return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
-
-    /**
-     *
-     * @param session
-     * @param placeId
-     * @return
-     */
-    /*public PlaceDetailsResponseDto getPlaceDetails(HttpSession session, Long placeId) {
-
-    }*/
-
-    /**
-     * 내가 선택한 장소로부터 인근에 있는 장소 리스트를 반환한다.
-     * 최대 반경은 20km, 거리를 계산해서 프론트단에서 1 3 5 10 20 등으로 나누어 지도 확대 축소 기능을 넣어서 출력해주도록 한다.
-     */
-    //public List<>
-
-
-    /*public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
-        // 기준 장소의 위경도 가져오기
-        Place originPlace = placeRepository.findById(placeId)
-                .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
-
-        double originPlaceLatitude = originPlace.getLatitude();
-        double originPlaceLongitude = originPlace.getLongitude();
-
-        // 주변 장소 쿼리 실행
-        List<NearbyPlaceProjection> raw = placeLanguageRepository.findNearbyPlacesWithinDistance(
-                originPlaceLatitude, originPlaceLongitude, langCode, placeId
-        );
-
-        Long userId = getLoginUserId(session);
-
-        // 결과 매핑
-        return raw.stream()
-                .map(p -> {
-                    boolean isBookmarked = false;
-                    if (userId != null)
-                        isBookmarked = bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, p.getPlaceId());
-
-                    return new NearbyPlaceResponseDto(
-                            new PlaceSearchResponseDto(
-                                    p.getLatitude(), p.getLongitude(), p.getFirstImageUrl(),
-                                    p.getPlaceName(), p.getDescription(), p.getAddress()
-                            ),
-                            p.getDistance()
-                    );
-                })
-                .toList();
-    }*/
 
     public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
         Place originPlace = placeRepository.findById(placeId)
