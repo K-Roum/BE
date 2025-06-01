@@ -37,7 +37,6 @@ public class UserController {
     })
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDto> signUp(@RequestBody SignupRequestDto request) {
-        // 실제 구현에서는 서비스 로직을 호출하고 서비스 로직에서 받아온 결과를 바탕으로 ApiResponseDto를 넘겨준다
         userService.signUp(request);
 
         return ResponseEntity
