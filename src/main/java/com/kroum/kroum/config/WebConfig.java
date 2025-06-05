@@ -17,8 +17,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:8080")
-                        .allowedOrigins("http://localhost:3000")// 정확하게 명시
+                        .allowedOrigins("http://localhost:8080", "http://localhost:3000")
                         .allowedMethods("*")
                         .allowCredentials(true)
                         .exposedHeaders("Set-Cookie") // 필요하면 추가

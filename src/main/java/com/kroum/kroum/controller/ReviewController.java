@@ -3,8 +3,11 @@ package com.kroum.kroum.controller;
 import com.kroum.kroum.dto.request.ReviewCreateRequestDto;
 import com.kroum.kroum.dto.request.ReviewUpdateRequestDto;
 import com.kroum.kroum.dto.response.ApiResponseDto;
+import com.kroum.kroum.dto.response.PlaceReviewsResponseDto;
 import com.kroum.kroum.dto.response.ReviewDetailResponseDto;
 import com.kroum.kroum.dto.response.ReviewSummaryResponseDto;
+import com.kroum.kroum.entity.Language;
+import com.kroum.kroum.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +25,10 @@ import java.util.List;
 @Tag(name = "Review API", description = "리뷰 관련 컨트롤러")
 @RestController
 @RequestMapping("/reviews")
+@RequiredArgsConstructor
 public class ReviewController {
+
+    private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 등록", description = "별점, 리뷰 내용 작성해서 컨트롤러 호출")
     @ApiResponses({
@@ -33,13 +40,13 @@ public class ReviewController {
     @PostMapping("/{placeId}")
     public ResponseEntity<ApiResponseDto> createReview(@PathVariable Long placeId,
                                                        @RequestBody ReviewCreateRequestDto request,
-                                                       HttpSession session)
-    {
-        // 서비스 로직 구현해야함
+                                                       HttpSession session) {
 
+        reviewService.createReview(request, placeId, session);
 
         return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 등록되었습니다."));
     }
+
 
     @Operation(summary = "리뷰 수정", description = "별점, 리뷰 내용 수정해서 컨트롤러 호출")
     @ApiResponses({
@@ -53,8 +60,7 @@ public class ReviewController {
                                                        @RequestBody ReviewUpdateRequestDto request,
                                                        HttpSession session)
     {
-        // 서비스 로직 구현해야함
-
+        reviewService.updateReview(reviewId, request, session);
 
         return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 수정되었습니다."));
     }
@@ -70,8 +76,7 @@ public class ReviewController {
     public ResponseEntity<ApiResponseDto> deleteReview(@PathVariable Long reviewId,
                                                        HttpSession session)
     {
-        // 서비스 로직 구현해야함
-
+        reviewService.deleteReview(reviewId, session);
 
         return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 삭제되었습니다."));
     }
@@ -84,26 +89,9 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping
-    public ResponseEntity<List<ReviewDetailResponseDto>> getReviewsByPlaceId(@RequestParam Long placeId) {
+    public ResponseEntity<PlaceReviewsResponseDto> getReviewsByPlaceId(@RequestParam Long placeId) {
 
-        // 서비스 미구현: mock 데이터로 대체
-        // 같은 장소에 대한 리뷰들을 가져오는 것임
-        List<ReviewDetailResponseDto> response = List.of(
-                new ReviewDetailResponseDto(
-                        "경복궁",
-                        4,
-                        "역사적인 분위기에서 산책하기 너무 좋아요.",
-                        "2025-05-12",
-                        "https://cdn.kroum.com/places/gyungbok.jpg"
-                ),
-                new ReviewDetailResponseDto(
-                        "경복궁",
-                        3,
-                        "야경이 예뻤어요. 낮보다 밤 추천!",
-                        "2025-05-11",
-                        "https://cdn.kroum.com/places/gyungbok.jpg"
-                )
-        );
+        PlaceReviewsResponseDto response = reviewService.getPlaceReviewList(placeId);
 
         return ResponseEntity.ok(response);
     }
@@ -121,23 +109,10 @@ public class ReviewController {
     })
     @GetMapping("/summary")
     public ResponseEntity<List<ReviewSummaryResponseDto>> getSummaryReviews(HttpSession session) {
-        // 서비스 미구현: mock 데이터로 대체
-        List<ReviewSummaryResponseDto> myReviews = List.of(
-                new ReviewSummaryResponseDto(
-                        123L,
-                        "https://cdn.kroum.com/places/gyungbok.jpg",
-                        4.5,
-                        "경복궁"
-                ),
-                new ReviewSummaryResponseDto(
-                        456L,
-                        "https://cdn.kroum.com/places/gyungbok123.jpg",
-                        2.3,
-                        "창덕궁"
-                )
-        );
 
-        return ResponseEntity.ok(myReviews);
+        List<ReviewSummaryResponseDto> myReviewSummaries = reviewService.getMyReviewSummaries(session);
+
+        return ResponseEntity.ok(myReviewSummaries);
     }
 
     @Operation(summary = "마이페이지에서 내가 작성한 리뷰 상세 조회", description = "리뷰 목록 버튼을 누르면 호출.")
@@ -149,23 +124,8 @@ public class ReviewController {
     })
     @GetMapping("/detail")
     public ResponseEntity<List<ReviewDetailResponseDto>> getDetailReviews(HttpSession session) {
-        // 서비스 미구현: mock 데이터로 대체
-        List<ReviewDetailResponseDto> myDetailReviews = List.of(
-                new ReviewDetailResponseDto(
-                        "경복궁",
-                        5,
-                        "역사적인 분위기에서 산책하기 너무 좋아요.",
-                        "2025-05-12",
-                        "https://cdn.kroum.com/places/gyungbok.jpg"
-                ),
-                new ReviewDetailResponseDto(
-                        "우리집",
-                        4,
-                        "진짜 편해요!",
-                        "2025-05-11",
-                        "https://cdn.kroum.com/places/gyungbok.jpg"
-                )
-        );
+
+        List<ReviewDetailResponseDto> myDetailReviews = reviewService.getMyFullReviews(session);
 
         return ResponseEntity.ok(myDetailReviews);
     }
