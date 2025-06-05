@@ -18,13 +18,22 @@ public class SearchHistory {
     @Column(name = "search_history_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Long userId;
 
     @Column(name = "search_text", columnDefinition = "TEXT", nullable = false)
     private String searchText;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @Builder
+    public SearchHistory(Long userId, String searchText) {
+        this.userId = userId;
+        this.searchText = searchText;
+    }
 }

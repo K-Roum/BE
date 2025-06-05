@@ -1,8 +1,11 @@
 package com.kroum.kroum.controller;
 
 import com.kroum.kroum.dto.request.PlaceSearchRequestDto;
+import com.kroum.kroum.dto.request.SaveSearchHistoryRequestDto;
 import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.service.PlaceService;
+import com.kroum.kroum.service.SearchHistoryService;
+import com.kroum.kroum.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +28,7 @@ import java.util.Map;
 public class PlaceController {
 
     private final PlaceService placeService;
+    private final SearchHistoryService searchHistoryService;
 
     @Operation(summary = "관광지 검색 / 구현완료", description = "문장형으로 관광지를 검색함")
     @ApiResponses({
@@ -43,6 +47,14 @@ public class PlaceController {
                                                                     HttpSession session) {
         List<ContentIdDto> ids = placeService.getRecommendedPlaceIds(request);
         List<PlaceSearchResponseDto> places = placeService.getPlacesByIds(ids, session);
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        // 검색 기록 저장
+        searchHistoryService.save(
+                SessionUtil.getLoginUserId(session),
+                new SaveSearchHistoryRequestDto(request.getQuery())
+        );
+
         return ResponseEntity.ok(places);
 
     }
