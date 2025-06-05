@@ -113,7 +113,7 @@ public class PlaceService {
     public PlaceReviewsResponseDto getReviewsByPlaceId(Long placeId) {
         Double avg = getAverageRating(placeId);
         Long totalCount = reviewRepository.countByPlace_PlaceId(placeId);
-        List<PlaceReviewDto> placeReviews = reviewRepository.findDtoByPlaceId(placeId);
+        List<PlaceReviewDto> placeReviews = reviewRepository.findPlaceReviewDtosByPlaceId(placeId);
         PlaceReviewsResponseDto responseDto = new PlaceReviewsResponseDto(totalCount, avg, placeReviews);
 
         return responseDto;

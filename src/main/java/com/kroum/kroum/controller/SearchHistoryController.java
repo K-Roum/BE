@@ -26,7 +26,7 @@ public class SearchHistoryController {
 
     private final SearchHistoryService searchHistoryService;
 
-    @Operation(summary = "최근 검색어 조회", description = "로그인된 사용자의 최근 검색어 리스트를 반환")
+    @Operation(summary = "최근 검색어 조회 / 구현 완료", description = "로그인된 사용자의 최근 검색어 리스트를 반환")
     @ApiResponse(responseCode = "200", description = "성공",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = SearchHistoryResponseDto.class))))
     @GetMapping
