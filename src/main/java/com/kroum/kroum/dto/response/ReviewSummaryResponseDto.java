@@ -20,7 +20,7 @@ public class ReviewSummaryResponseDto {
     private String firstImageUrl; // UI에서 썸네일 표시 가능
 
     @Schema(description = "리뷰 평균 평점", example = "4.3")
-    private double averageRating;
+    private int averageRating;
 
     @Schema(description = "장소 이름", example = "경복궁")
     private String placeName;
