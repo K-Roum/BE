@@ -10,6 +10,7 @@ import com.kroum.kroum.repository.PlaceLanguageRepository;
 import com.kroum.kroum.repository.PlaceRepository;
 import com.kroum.kroum.repository.ReviewRepository;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
+import com.kroum.kroum.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,7 +20,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -75,19 +78,31 @@ public class PlaceService {
         }
     }
 
-    /*
-
-     */
-    // 이거 넘겨줄 때 찜 여부도 넘겨줘야 할 것 같은데 그럼 Dto 수정 할 필요가 있어 보임
-    // 아아아아악!!!!!!!!!!!
-    public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids) {
+    public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
+        Long userId = SessionUtil.getLoginUserId(session);
 
         List<Long> placeIds = ids.stream()
                 .map(ContentIdDto::getContentId)
                 .toList();
 
-        return placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
+        // 북마크된 placeId 리스트 가져오기
+        Set<Long> bookmarkedPlaceIds = (userId != null)
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of(); // 로그인 안 했으면 비어 있는 Set
+
+        // 원래 장소 조회
+        List<PlaceSearchResponseDto> rawList = placeLanguageRepository.findAllDtoByPlaceIdIn(placeIds);
+
+        // 북마크 여부 추가해서 DTO 재조립
+        return rawList.stream()
+                .map(dto -> {
+                    boolean isBookmarked = bookmarkedPlaceIds.contains(dto.getPlaceId());
+                    dto.setBookmarked(isBookmarked); // 세터로 설정
+                    return dto;
+                })
+                .toList();
     }
+
 
     /**
      * 해당 장소에 대한 리뷰 목록을 들고 온다.
@@ -119,64 +134,40 @@ public class PlaceService {
      */
     public boolean isBookmarked(HttpSession session, Long placeId) {
 
-        if (session == null) return false;
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return false;
+        Long userId = SessionUtil.getLoginUserId(session);
 
         return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
 
-    /**
-     *
-     * @param session
-     * @param placeId
-     * @return
-     */
-    /*public PlaceDetailsResponseDto getPlaceDetails(HttpSession session, Long placeId) {
-
-    }*/
-
-    /**
-     * 내가 선택한 장소로부터 인근에 있는 장소 리스트를 반환한다.
-     * 최대 반경은 20km, 거리를 계산해서 프론트단에서 1 3 5 10 20 등으로 나누어 지도 확대 축소 기능을 넣어서 출력해주도록 한다.
-     */
-    //public List<>
-
-
     public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
-        // 기준 장소의 위경도 가져오기
         Place originPlace = placeRepository.findById(placeId)
                 .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
 
-        double originPlaceLatitude = originPlace.getLatitude();
-        double originPlaceLongitude = originPlace.getLongitude();
-
-        // 주변 장소 쿼리 실행
         List<NearbyPlaceProjection> raw = placeLanguageRepository.findNearbyPlacesWithinDistance(
-                originPlaceLatitude, originPlaceLongitude, langCode, placeId
+                originPlace.getLatitude(), originPlace.getLongitude(), langCode, placeId
         );
 
-        // 사용자 로그인 여부 확인
-        Long userId = session != null ? (Long) session.getAttribute("userId") : null;
+        Long userId = SessionUtil.getLoginUserId(session);
 
-        // 결과 매핑
+        Set<Long> bookmarkedPlaceIds = userId != null
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of();
+
         return raw.stream()
                 .map(p -> {
-                    boolean isBookmarked = false;
-                    if (userId != null)
-                        isBookmarked = bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, p.getPlaceId());
-
+                    boolean isBookmarked = bookmarkedPlaceIds.contains(p.getPlaceId());
                     return new NearbyPlaceResponseDto(
                             new PlaceSearchResponseDto(
                                     p.getLatitude(), p.getLongitude(), p.getFirstImageUrl(),
-                                    p.getPlaceName(), p.getDescription(), p.getAddress()
+                                    p.getPlaceName(), p.getDescription(), p.getAddress(),
+                                    isBookmarked, p.getPlaceId()
                             ),
                             p.getDistance()
                     );
                 })
                 .toList();
     }
+
 
     public PlaceDetailsWithNearbyPlacesResponseDto getPlaceDetailsWithNearbyPlaces(Long placeId, String langCode, HttpSession session) {
         // 1. 리뷰 정보 수집
@@ -196,9 +187,6 @@ public class PlaceService {
         // 5. 최종 응답 조립
         return new PlaceDetailsWithNearbyPlacesResponseDto(details, nearby);
     }
-
-
-
 
 
 }

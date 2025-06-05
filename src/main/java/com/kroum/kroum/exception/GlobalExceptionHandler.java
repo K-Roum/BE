@@ -15,14 +15,49 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<ErrorResponseDto> handleInvalidRequestException(InvalidRequestException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponseDto(exception.getMessage(), 400));
     }
 
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<ErrorResponseDto> handleInternalServerException(InternalServerException exception) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponseDto(exception.getMessage(), 500));
     }
 
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicateException(DuplicateException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponseDto(exception.getMessage(), 409));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleNotFoundException(NotFoundException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponseDto(exception.getMessage(), 404));
+    }
+
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<ErrorResponseDto> handleUnauthenticatedException(UnauthenticatedException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponseDto(exception.getMessage(), 401));
+    }
+
+    @ExceptionHandler(EmailSendFailedException.class)
+    public ResponseEntity<ErrorResponseDto> handleEmailSendFailedException(EmailSendFailedException exception) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDto(exception.getMessage(), 500));
+    }
 }
