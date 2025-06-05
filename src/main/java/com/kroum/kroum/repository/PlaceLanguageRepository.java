@@ -73,5 +73,8 @@ ORDER BY distance ASC
             @Param("placeId") Long placeId
     );
 
+    Optional<PlaceLanguage> findByPlace_PlaceIdAndLanguage_LanguageCode(Long placeId, String languageCode);
+
+
 }
 
