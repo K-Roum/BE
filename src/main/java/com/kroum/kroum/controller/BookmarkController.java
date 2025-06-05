@@ -2,6 +2,7 @@ package com.kroum.kroum.controller;
 
 import com.kroum.kroum.dto.response.ApiResponseDto;
 import com.kroum.kroum.dto.response.BookmarkResponseDto;
+import com.kroum.kroum.service.BookmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,10 @@ import java.util.List;
 @Tag(name = "Bookmark API", description = "북마크 관련해서 다루는 컨트롤러")
 @RestController
 @RequestMapping("/bookmarks")
+@RequiredArgsConstructor
 public class BookmarkController {
+
+    private final BookmarkService bookmarkService;
 
     @Operation(summary = "찜 추가", description = "버튼을 누르면 찜이 추가됨")
     @ApiResponses({
@@ -29,7 +34,8 @@ public class BookmarkController {
     })
     @PostMapping("/{placeId}")
     public ResponseEntity<ApiResponseDto> addBookmark(@PathVariable Long placeId, HttpSession session) {
-        // 찜 추가를 누르면 북마크 테이블에 bookmarked가 false -> true로 바뀌어야 함
+
+        bookmarkService.addBookmark(placeId, session);
         return ResponseEntity.ok(new ApiResponseDto(true, "찜 목록에 추가되었습니다."));
     }
 
@@ -42,7 +48,8 @@ public class BookmarkController {
     })
     @DeleteMapping("/{placeId}")
     public ResponseEntity<ApiResponseDto> deleteBookmark(@PathVariable Long placeId, HttpSession session) {
-        // 찜 추가를 누르면 북마크 테이블에 bookmarked가 false -> true로 바뀌어야 함
+
+        bookmarkService.deleteBookmark(placeId, session);
         return ResponseEntity.ok(new ApiResponseDto(true, "찜 목록에서 삭제되었습니다."));
     }
 
@@ -55,9 +62,8 @@ public class BookmarkController {
     })
     @GetMapping
     public ResponseEntity<List<BookmarkResponseDto>> getBookmarks(HttpSession session) {
-        // 서비스 로직 구현
-        List<BookmarkResponseDto> bookmarkResponseDto = List.of(new BookmarkResponseDto(123L, "경복궁", "2025-05-12", "https://cdn.kroum.com/places/gyungbok.jpg"),
-                new BookmarkResponseDto(456L, "경복궁", "2025-05-12", "https://cdn.kroum.com/places/gyungbok.jpg"));
-        return ResponseEntity.ok(bookmarkResponseDto);
+        List<BookmarkResponseDto> bookmarks = bookmarkService.getBookmarks(session);
+        return ResponseEntity.ok(bookmarks);
     }
+
 }
