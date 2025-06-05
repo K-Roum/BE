@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -20,6 +21,9 @@ public class User {
     @JoinColumn(name = "language_code")
     private Language language;
 
+    @Column(name = "login_id", unique = true, nullable = false)
+    private String loginId;
+
     @Column(length = 255, nullable = false)
     private String password;
 
@@ -28,4 +32,6 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String email;
+
+
 }

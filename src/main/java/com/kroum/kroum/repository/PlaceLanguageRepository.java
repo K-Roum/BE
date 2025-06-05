@@ -18,7 +18,9 @@ public interface PlaceLanguageRepository extends JpaRepository<PlaceLanguage, Lo
     @Query("""
 SELECT new com.kroum.kroum.dto.response.PlaceSearchResponseDto(
     p.latitude, p.longitude, p.firstImageUrl,
-    pl.placeName, pl.description, pl.address
+    pl.placeName, pl.description, pl.address,
+    false,
+    p.placeId
 )
 FROM PlaceLanguage pl
 JOIN pl.place p
@@ -29,7 +31,9 @@ WHERE pl.place.placeId = :placeId
     @Query("""
 SELECT new com.kroum.kroum.dto.response.PlaceSearchResponseDto(
     p.latitude, p.longitude, p.firstImageUrl,
-    pl.placeName, pl.description, pl.address
+    pl.placeName, pl.description, pl.address,
+    false,        
+    p.placeId     
 )
 FROM PlaceLanguage pl
 JOIN pl.place p
