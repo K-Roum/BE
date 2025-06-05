@@ -1,10 +1,7 @@
 package com.kroum.kroum.service;
 
-import com.kroum.kroum.dto.request.PlaceSearchRequestDto;
 import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.entity.Place;
-import com.kroum.kroum.exception.InternalServerException;
-import com.kroum.kroum.exception.InvalidRequestException;
 import com.kroum.kroum.repository.*;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
 import jakarta.servlet.http.HttpSession;
@@ -13,10 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -69,7 +62,7 @@ class PlaceServiceTest {
         when(reviewRepository.countByPlace_PlaceId(1L)).thenReturn(3L);
         when(reviewRepository.findAverageRatingByPlaceId(1L)).thenReturn(4.5);
         List<PlaceReviewDto> reviews = List.of(new PlaceReviewDto("user", "good", 5, LocalDateTime.now()));
-        when(reviewRepository.findDtoByPlaceId(1L)).thenReturn(reviews);
+        when(reviewRepository.findPlaceReviewDtosByPlaceId(1L)).thenReturn(reviews);
 
         PlaceReviewsResponseDto result = placeService.getReviewsByPlaceId(1L);
         assertThat(result.getTotalCount()).isEqualTo(3);
