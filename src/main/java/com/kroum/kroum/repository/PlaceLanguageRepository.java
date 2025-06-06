@@ -61,8 +61,8 @@ SELECT
     ST_Distance_Sphere(POINT(:lon, :lat), POINT(p.longitude, p.latitude)) AS distance
 FROM place p
 JOIN place_language pl ON pl.place_id = p.place_id
-WHERE pl.language_code = :lang
-  AND p.place_id != :placeId
+WHERE pl.language_code = :lang AND
+      p.place_id != :placeId
 HAVING distance <= 20000
 ORDER BY distance ASC
 """, nativeQuery = true)

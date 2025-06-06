@@ -19,8 +19,8 @@ public class ReviewSummaryResponseDto {
     @Schema(description = "대표 이미지 URL", example = "https://cdn.kroum.com/places/gyungbok.jpg")
     private String firstImageUrl; // UI에서 썸네일 표시 가능
 
-    @Schema(description = "리뷰 평균 평점", example = "4.3")
-    private int averageRating;
+    @Schema(description = "리뷰 평점", example = "4")
+    private int rating;
 
     @Schema(description = "장소 이름", example = "경복궁")
     private String placeName;

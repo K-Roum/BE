@@ -49,11 +49,12 @@ public class PlaceController {
         List<PlaceSearchResponseDto> places = placeService.getPlacesByIds(ids, session);
         Long userId = SessionUtil.getLoginUserId(session);
 
-        // 검색 기록 저장
-        searchHistoryService.save(
-                SessionUtil.getLoginUserId(session),
-                new SaveSearchHistoryRequestDto(request.getQuery())
-        );
+        if (userId != null) {
+            searchHistoryService.save(
+                    SessionUtil.getLoginUserId(session),
+                    new SaveSearchHistoryRequestDto(request.getQuery())
+            );
+        }
 
         return ResponseEntity.ok(places);
 
