@@ -91,6 +91,8 @@ public class UserService {
         }
 
         session.setAttribute("userId", user.getId());
+        log.info("로그인 완료 세션 ID: {}", session.getId());
+
         return session;
     }
 
@@ -243,7 +245,7 @@ public class UserService {
 
         // 3. 리뷰 요약
         List<ReviewSummaryResponseDto> reviewSummaries =
-                reviewRepository.findReviewSummariesByUserId(userId, user.getLanguage());
+                reviewRepository.findReviewSummariesByUserId(userId);
 
         // 4. 응답 조립
         return new MyPageResponseDto(profile, bookmarkDtos, reviewSummaries);

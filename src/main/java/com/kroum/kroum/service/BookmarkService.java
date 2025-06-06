@@ -12,6 +12,7 @@ import com.kroum.kroum.repository.UserRepository;
 import com.kroum.kroum.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookmarkService {
 
     private final BookmarkRepository bookmarkRepository;
@@ -31,6 +33,7 @@ public class BookmarkService {
     @Transactional
     public void addBookmark(Long placeId, HttpSession session) {
         Long userId = SessionUtil.getLoginUserId(session);
+        log.info("[찜 요청] 세션 ID: {}", session.getId());
 
         // 중복 체크
         if (bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId)) {
@@ -43,7 +46,7 @@ public class BookmarkService {
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new NoSuchElementException("장소를 찾을 수 없습니다."));
         PlaceLanguage placeLanguage = placeLanguageRepository.findByPlace_PlaceIdAndLanguage_LanguageCode(
-                placeId, user.getLanguage().getLanguageCode()
+                placeId, "ko"
         ).orElseThrow(() -> new NoSuchElementException("다국어 장소 정보를 찾을 수 없습니다."));
 
         // Bookmark 생성

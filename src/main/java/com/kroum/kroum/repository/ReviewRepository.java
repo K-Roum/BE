@@ -40,7 +40,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         SELECT new com.kroum.kroum.dto.response.ReviewSummaryResponseDto(
             p.placeId,
             p.firstImageUrl,
-            AVG(r.rating),
+            r.rating,
             pl.placeName
         )
         FROM Review r
@@ -49,7 +49,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         WHERE r.user.id = :userId
         GROUP BY p.placeId, p.firstImageUrl, pl.placeName
     """)
-    List<ReviewSummaryResponseDto> findReviewSummariesByUserId(Long userId, Language language);
+    List<ReviewSummaryResponseDto> findReviewSummariesByUserId(Long userId);
 
     @Query("""
         SELECT new com.kroum.kroum.dto.response.ReviewDetailResponseDto(
@@ -64,7 +64,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         JOIN PlaceLanguage pl ON pl.place = p AND pl.language = :language
         WHERE r.user.id = :userId
     """)
-    List<ReviewDetailResponseDto> findReviewDetailsByUserId(Long userId, Language language);
+    List<ReviewDetailResponseDto> findReviewDetailsByUserId(Long userId);
 
 }
 

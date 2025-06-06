@@ -107,18 +107,18 @@ public class ReviewService {
 
 
     public List<ReviewSummaryResponseDto> getMyReviewSummaries(HttpSession session) {
-        Long userId = SessionUtil.getLoginUserId(session);
+        Long userId = SessionUtil.requireLoginUserId(session);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
-        return reviewRepository.findReviewSummariesByUserId(userId, user.getLanguage());
+        return reviewRepository.findReviewSummariesByUserId(userId);
     }
 
     public List<ReviewDetailResponseDto> getMyFullReviews(HttpSession session) {
-        Long userId = SessionUtil.getLoginUserId(session);
+        Long userId = SessionUtil.requireLoginUserId(session);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
-        return reviewRepository.findReviewDetailsByUserId(userId, user.getLanguage());
+        return reviewRepository.findReviewDetailsByUserId(userId);
     }
 }
