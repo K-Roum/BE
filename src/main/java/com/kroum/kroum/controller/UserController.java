@@ -3,6 +3,7 @@ package com.kroum.kroum.controller;
 import com.kroum.kroum.dto.request.*;
 import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.service.UserService;
+import com.kroum.kroum.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -112,7 +113,7 @@ public class UserController {
 
 
 
-    @Operation(summary = "마이페이지 조회", description = "프로필, 찜 목록, 리뷰 목록을 통합 조회")
+    @Operation(summary = "마이페이지 조회 / 구현 완료", description = "프로필, 찜 목록, 리뷰 목록을 통합 조회")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "마이페이지 데이터 반환 성공",
                     content = @Content(schema = @Schema(implementation = MyPageResponseDto.class))),
@@ -121,7 +122,7 @@ public class UserController {
     })
     @GetMapping("/mypage")
     public ResponseEntity<MyPageResponseDto> getMyPage(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.requireLoginUserId(session);
         log.info("[마이페이지 요청] 세션 ID: {}", session.getId());
 
         MyPageResponseDto myPage = userService.getMyPage(userId);
