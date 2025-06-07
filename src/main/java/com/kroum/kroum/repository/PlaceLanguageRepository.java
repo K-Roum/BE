@@ -3,6 +3,7 @@ package com.kroum.kroum.repository;
 import com.kroum.kroum.dto.response.PlaceSearchResponseDto;
 import com.kroum.kroum.entity.PlaceLanguage;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
+import com.kroum.kroum.repository.projection.PlaceImagePreviewProjection;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -75,6 +76,16 @@ ORDER BY distance ASC
 
     Optional<PlaceLanguage> findByPlace_PlaceIdAndLanguage_LanguageCode(Long placeId, String languageCode);
 
-
+    @Query(value = """
+            SELECT pl.place_id AS placeId, p.first_image_url AS imageUrl
+            FROM place_language pl
+            JOIN place p ON pl.place_id = p.place_id
+            WHERE pl.language_code = :languageCode
+              AND p.first_image_url IS NOT NULL
+              AND p.first_image_url <> ''
+            ORDER BY RAND()
+            LIMIT 3
+            """, nativeQuery = true)
+    List<PlaceImagePreviewProjection> findRandomPreviewsByLanguage(@Param("languageCode") String languageCode);
 }
 

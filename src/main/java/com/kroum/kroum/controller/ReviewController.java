@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -100,7 +102,7 @@ public class ReviewController {
     //
     //**GET /summary**
 
-    @Operation(summary = "마이페이지에서 내가 작성한 리뷰 요약 조회", description = "마이페이지 버튼을 누르면 이 컨트롤러 호출, 조합해서 마이페이지 찍어준다.")
+    @Operation(summary = "마이페이지에서 내가 작성한 리뷰 요약 조회 / 구현 완료", description = "마이페이지 버튼을 누르면 이 컨트롤러 호출, 조합해서 마이페이지 찍어준다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "내 리뷰 목록 호출 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewSummaryResponseDto.class)))),
@@ -115,7 +117,7 @@ public class ReviewController {
         return ResponseEntity.ok(myReviewSummaries);
     }
 
-    @Operation(summary = "마이페이지에서 내가 작성한 리뷰 상세 조회", description = "리뷰 목록 버튼을 누르면 호출.")
+    @Operation(summary = "마이페이지에서 내가 작성한 리뷰 상세 조회 / 구현 완료", description = "리뷰 목록 버튼을 누르면 호출.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "내 상세 리뷰 목록 호출 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDetailResponseDto.class)))),
@@ -124,7 +126,7 @@ public class ReviewController {
     })
     @GetMapping("/detail")
     public ResponseEntity<List<ReviewDetailResponseDto>> getDetailReviews(HttpSession session) {
-
+        log.info("내가 작성한 리뷰 상세 조회 컨트롤러 호출");
         List<ReviewDetailResponseDto> myDetailReviews = reviewService.getMyFullReviews(session);
 
         return ResponseEntity.ok(myDetailReviews);
