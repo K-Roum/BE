@@ -45,9 +45,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         )
         FROM Review r
         JOIN r.place p
-        JOIN PlaceLanguage pl ON pl.place = p AND pl.language = :language
+        JOIN PlaceLanguage pl ON pl.place = p
         WHERE r.user.id = :userId
-        GROUP BY p.placeId, p.firstImageUrl, pl.placeName
     """)
     List<ReviewSummaryResponseDto> findReviewSummariesByUserId(Long userId);
 
@@ -56,12 +55,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             pl.placeName,
             r.rating,
             r.content,
-            FUNCTION('DATE_FORMAT', r.createdAt, '%Y-%m-%d'),
+            r.createdAt,
             p.firstImageUrl
         )
         FROM Review r
         JOIN r.place p
-        JOIN PlaceLanguage pl ON pl.place = p AND pl.language = :language
+        JOIN PlaceLanguage pl ON pl.place = p
         WHERE r.user.id = :userId
     """)
     List<ReviewDetailResponseDto> findReviewDetailsByUserId(Long userId);

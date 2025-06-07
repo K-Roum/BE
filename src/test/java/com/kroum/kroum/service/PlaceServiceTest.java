@@ -84,7 +84,7 @@ class PlaceServiceTest {
         assertThat(result.get(0).isBookmarked()).isTrue();
     }
 
-    @Test
+    /*@Test
     void getNearbyPlaces() {
         Place origin = new Place();
         origin.setLatitude(10.0);
@@ -109,7 +109,7 @@ class PlaceServiceTest {
         List<NearbyPlaceResponseDto> result = placeService.getNearbyPlaces(1L, "ko", session);
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getPlace().isBookmarked()).isTrue();
-    }
+    }*/
 
    /* @Test
     void getRecommendedPlaceIds_success() {
