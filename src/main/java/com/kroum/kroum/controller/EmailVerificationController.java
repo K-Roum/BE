@@ -25,7 +25,7 @@ public class EmailVerificationController {
 
     private final EmailVerificationService emailVerificationService;
 
-    @Operation(summary = "이메일 인증 발송 요청", description = "버튼을 누르면 이메일로 인증 코드 발송")
+    @Operation(summary = "이메일 인증 발송 요청 / 구현 완료", description = "버튼을 누르면 이메일로 인증 코드 발송")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "이메일로 인증 코드 발송 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
@@ -39,7 +39,7 @@ public class EmailVerificationController {
     }
 
 
-    @Operation(summary = "인증 코드 확인 요청", description = "버튼을 누르면 내가 보낸 인증 코드와 클라이언트가 제출한 코드의 일치여부 확인")
+    @Operation(summary = "인증 코드 확인 요청 / 구현 완료", description = "버튼을 누르면 내가 보낸 인증 코드와 클라이언트가 제출한 코드의 일치여부 확인")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "인증 성공",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
