@@ -3,6 +3,7 @@ package com.kroum.kroum.controller;
 import com.kroum.kroum.dto.response.ApiResponseDto;
 import com.kroum.kroum.dto.response.BookmarkResponseDto;
 import com.kroum.kroum.service.BookmarkService;
+import com.kroum.kroum.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,7 +52,9 @@ public class BookmarkController {
     })
     @DeleteMapping("/{placeId}")
     public ResponseEntity<ApiResponseDto> deleteBookmark(@PathVariable Long placeId, HttpSession session) {
-        // 찜 추가를 누르면 북마크 테이블에 bookmarked가 false -> true로 바뀌어야 함
+
+        bookmarkService.deleteBookmark(placeId, session);
+
         return ResponseEntity.ok(new ApiResponseDto(true, "찜 목록에서 삭제되었습니다."));
     }
 
@@ -64,9 +67,9 @@ public class BookmarkController {
     })
     @GetMapping
     public ResponseEntity<List<BookmarkResponseDto>> getBookmarks(HttpSession session) {
-        // 서비스 로직 구현
-        List<BookmarkResponseDto> bookmarkResponseDto = List.of(new BookmarkResponseDto(123L, "경복궁", "2025-05-12", "https://cdn.kroum.com/places/gyungbok.jpg"),
-                new BookmarkResponseDto(456L, "경복궁", "2025-05-12", "https://cdn.kroum.com/places/gyungbok.jpg"));
-        return ResponseEntity.ok(bookmarkResponseDto);
+
+        List<BookmarkResponseDto> response = bookmarkService.getBookmarks(session);
+
+        return ResponseEntity.ok(response);
     }
 }
