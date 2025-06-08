@@ -37,7 +37,7 @@ public class BookmarkService {
 
         // 중복 체크
         if (bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId)) {
-            throw new IllegalStateException("이미 찜한 장소입니다.");
+            deleteBookmark(placeId, session);
         }
 
         // 필요한 엔티티 로딩
