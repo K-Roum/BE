@@ -40,13 +40,13 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/{placeId}")
-    public ResponseEntity<ApiResponseDto> createReview(@PathVariable Long placeId,
+    public ResponseEntity<ReviewCreateRequestDto> createReview(@PathVariable Long placeId,
                                                        @RequestBody ReviewCreateRequestDto request,
                                                        HttpSession session) {
 
         reviewService.createReview(request, placeId, session);
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 등록되었습니다."));
+        return ResponseEntity.ok(request);
     }
 
 
@@ -58,13 +58,13 @@ public class ReviewController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PutMapping("/{reviewId}")
-    public ResponseEntity<ApiResponseDto> updateReview(@PathVariable Long reviewId,
+    public ResponseEntity<ReviewUpdateRequestDto> updateReview(@PathVariable Long reviewId,
                                                        @RequestBody ReviewUpdateRequestDto request,
                                                        HttpSession session)
     {
         reviewService.updateReview(reviewId, request, session);
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 수정되었습니다."));
+        return ResponseEntity.ok(request);
     }
 
     @Operation(summary = "리뷰 삭제", description = "리뷰 삭제 버튼을 누르면 컨트롤러 호출")
