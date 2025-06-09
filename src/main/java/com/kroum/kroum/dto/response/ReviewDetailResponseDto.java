@@ -16,6 +16,9 @@ import java.time.format.DateTimeFormatter;
 @Schema(name = "B_ReviewDetailResponseDto", description = "리뷰 상세 조회 DTO")
 public class ReviewDetailResponseDto {
 
+    @Schema(description = "장소 ID", example = "123")
+    private Long placeId;
+
     @Schema(description = "장소 이름", example = "경복궁")
     private String placeName;
 
