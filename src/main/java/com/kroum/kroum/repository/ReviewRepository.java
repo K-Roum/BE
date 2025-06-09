@@ -54,6 +54,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("""
         SELECT new com.kroum.kroum.dto.response.ReviewDetailResponseDto(
+            p.placeId,
             pl.placeName,
             r.rating,
             r.content,
