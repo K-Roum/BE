@@ -7,9 +7,11 @@ import com.kroum.kroum.entity.Language;
 import com.kroum.kroum.entity.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -64,6 +66,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         WHERE r.user.id = :userId
     """)
     List<ReviewDetailResponseDto> findReviewDetailsByUserId(Long userId);
+
+    @Query("SELECT r FROM Review r WHERE r.place.placeId = :placeId AND r.user.id = :userId")
+    Optional<Review> findByPlaceIdAndUserId(@Param("placeId") Long placeId, @Param("userId") Long userId);
+
 
 }
 

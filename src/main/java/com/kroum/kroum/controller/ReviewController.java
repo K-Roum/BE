@@ -55,34 +55,38 @@ public class ReviewController {
     @Operation(summary = "리뷰 수정 / 구현 완료", description = "별점, 리뷰 내용 수정해서 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 수정됨",
-                    content = @Content(schema = @Schema(implementation = ReviewUpdateRequestDto.class))),
+                    content = @Content(schema = @Schema(implementation = PlaceReviewsResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PutMapping("/{reviewId}")
-    public ResponseEntity<ReviewUpdateRequestDto> updateReview(@PathVariable Long reviewId,
+    @PutMapping("/{placeId}")
+    public ResponseEntity<PlaceReviewsResponseDto> updateReview(@PathVariable Long placeId,
                                                        @RequestBody ReviewUpdateRequestDto request,
                                                        HttpSession session)
     {
-        reviewService.updateReview(reviewId, request, session);
+        reviewService.updateReview(placeId, request, session);
 
-        return ResponseEntity.ok(request);
+        PlaceReviewsResponseDto response = reviewService.getPlaceReviewList(placeId);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "리뷰 삭제 / 구현 완료", description = "리뷰 삭제 버튼을 누르면 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 삭제됨",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = PlaceReviewsResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @DeleteMapping("/{reviewId}")
-    public ResponseEntity<ApiResponseDto> deleteReview(@PathVariable Long reviewId,
+    @DeleteMapping("/{placeId}")
+    public ResponseEntity<PlaceReviewsResponseDto> deleteReview(@PathVariable Long placeId,
                                                        HttpSession session)
     {
-        reviewService.deleteReview(reviewId, session);
+        reviewService.deleteReview(placeId, session);
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 삭제되었습니다."));
+        PlaceReviewsResponseDto response = reviewService.getPlaceReviewList(placeId);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "특정 장소 리뷰 조회 / 구현 완료", description = "상세보기 버튼을 누르면 컨트롤러 호출")
