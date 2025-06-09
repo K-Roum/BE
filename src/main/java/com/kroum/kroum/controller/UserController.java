@@ -248,4 +248,22 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponseDto(true, "회원 탈퇴가 완료되었습니다."));
     }
 
+    @Operation(summary = "마이 페이지 내에서 장소 상세 조회", description = "선택한 관광지의 상세 정보(리뷰, 찜 여부 포함)를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "장소 상세 조회 성공",
+                    content = @Content(schema = @Schema(implementation = PlaceDetailsByPlaceIdResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "해당 장소를 찾을 수 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @GetMapping("/{placeId}/details")
+    public ResponseEntity<PlaceDetailsByPlaceIdResponseDto> getPlaceDetails(
+            @PathVariable Long placeId,
+            HttpSession session
+    )
+    {
+        PlaceDetailsByPlaceIdResponseDto dto = userService.getPlaceDetailsByPlaceId(placeId, session);
+        return ResponseEntity.ok(dto);
+    }
+
+
 }
