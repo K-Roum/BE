@@ -32,7 +32,7 @@ public class BookmarkController {
     @Operation(summary = "찜 추가 / 구현 완료", description = "버튼을 누르면 찜이 추가됨")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 찜이 추가됨",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = PlaceBookmarkDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
@@ -49,7 +49,7 @@ public class BookmarkController {
     @Operation(summary = "찜 삭제 / 구현 완료", description = "찜이 된 버튼을 누르면 찜이 삭제됨")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 찜이 삭제됨",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = PlaceBookmarkDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })

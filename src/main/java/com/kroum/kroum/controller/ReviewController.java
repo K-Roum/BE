@@ -32,10 +32,10 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @Operation(summary = "리뷰 등록", description = "별점, 리뷰 내용 작성해서 컨트롤러 호출")
+    @Operation(summary = "리뷰 등록 / 구현 완료", description = "별점, 리뷰 내용 작성해서 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 등록됨",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = ReviewCreateRequestDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
@@ -50,10 +50,10 @@ public class ReviewController {
     }
 
 
-    @Operation(summary = "리뷰 수정", description = "별점, 리뷰 내용 수정해서 컨트롤러 호출")
+    @Operation(summary = "리뷰 수정 / 구현 완료", description = "별점, 리뷰 내용 수정해서 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 수정됨",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
+                    content = @Content(schema = @Schema(implementation = ReviewUpdateRequestDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
@@ -67,7 +67,7 @@ public class ReviewController {
         return ResponseEntity.ok(request);
     }
 
-    @Operation(summary = "리뷰 삭제", description = "리뷰 삭제 버튼을 누르면 컨트롤러 호출")
+    @Operation(summary = "리뷰 삭제 / 구현 완료", description = "리뷰 삭제 버튼을 누르면 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 삭제됨",
                     content = @Content(schema = @Schema(implementation = ApiResponseDto.class))),
@@ -83,7 +83,7 @@ public class ReviewController {
         return ResponseEntity.ok(new ApiResponseDto(true, "리뷰가 성공적으로 삭제되었습니다."));
     }
 
-    @Operation(summary = "특정 장소 리뷰 조회", description = "상세보기 버튼을 누르면 컨트롤러 호출")
+    @Operation(summary = "특정 장소 리뷰 조회 / 구현 완료", description = "상세보기 버튼을 누르면 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 관광지에 대한 리뷰 목록 호출",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDetailResponseDto.class)))),
