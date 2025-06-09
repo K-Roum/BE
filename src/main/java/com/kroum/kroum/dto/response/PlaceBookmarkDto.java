@@ -18,5 +18,9 @@ public class PlaceBookmarkDto {
 
     @Schema(description = "현재 사용자가 찜했는지 여부", example = "true")
     private boolean bookmarked;
+
+    public PlaceBookmarkDto(boolean bookmarked) {
+        this.bookmarked = bookmarked;
+    }
 }
 

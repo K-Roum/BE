@@ -113,5 +113,34 @@ public class PlaceController {
     }
 
 
+    @Operation(summary = "장소 상세 통합 요청 / 구현완료", description = "장소 클릭 시 상세 정보 + 리뷰 + 주변 장소 리스트 반환")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "성공 시 통합 상세 정보 반환",
+                    content = @Content
+                            (schema = @Schema(implementation = PlaceDetailsWithNearbyPlacesResponseDto.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "InvalidRequestException : 잘못된 요청 에러",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))),
+            @ApiResponse(responseCode = "500", description = "InternalServerException : 내부 서버 에러",
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @GetMapping("/{placeId}/with-everything-by-image")
+    public ResponseEntity<PlaceDetailsByImageResponseDto> getPlaceDetailsWithEverythingByImage(
+            @PathVariable Long placeId,
+            @RequestParam String languageCode,
+            HttpSession session
+    )
+    {
+        PlaceDetailsByImageResponseDto response =
+                placeService.getPlaceDetailsWithEverythingByImage(placeId, languageCode, session);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
 
 }
