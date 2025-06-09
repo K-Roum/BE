@@ -35,18 +35,20 @@ public class ReviewController {
     @Operation(summary = "리뷰 등록 / 구현 완료", description = "별점, 리뷰 내용 작성해서 컨트롤러 호출")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 리뷰가 등록됨",
-                    content = @Content(schema = @Schema(implementation = ReviewCreateRequestDto.class))),
+                    content = @Content(schema = @Schema(implementation = PlaceReviewsResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "로그인이 필요함"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/{placeId}")
-    public ResponseEntity<ReviewCreateRequestDto> createReview(@PathVariable Long placeId,
+    public ResponseEntity<PlaceReviewsResponseDto> createReview(@PathVariable Long placeId,
                                                        @RequestBody ReviewCreateRequestDto request,
                                                        HttpSession session) {
 
         reviewService.createReview(request, placeId, session);
 
-        return ResponseEntity.ok(request);
+        PlaceReviewsResponseDto response = reviewService.getPlaceReviewList(placeId);
+
+        return ResponseEntity.ok(response);
     }
 
 
