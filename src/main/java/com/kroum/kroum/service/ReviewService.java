@@ -48,7 +48,7 @@ public class ReviewService {
 
     }
 
-    public void updateReview(Long reviewId, ReviewUpdateRequestDto request, HttpSession session) {
+    public void updateReview(Long placeId, ReviewUpdateRequestDto request, HttpSession session) {
         Long userId = SessionUtil.getLoginUserId(session);
         if (userId == null) {
             throw new RuntimeException("로그인이 필요합니다.");
@@ -57,31 +57,29 @@ public class ReviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByPlaceIdAndUserId(placeId, userId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-        // 작성자 본인인지 검증
         if (!review.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("본인의 리뷰만 수정할 수 있습니다.");
         }
 
-        // 수정
         review.setContent(request.getContent());
         review.setRating(request.getRating());
-        // review.setCreatedAt(LocalDateTime.now()); // 생성일 재설정이 아닌 updatedAt이 더 맞을 수도 있음
 
         reviewRepository.save(review);
     }
 
 
-    public void deleteReview(Long reviewId, HttpSession session) {
+
+    public void deleteReview(Long placeId, HttpSession session) {
 
         Long userId = SessionUtil.getLoginUserId(session);
         if (userId == null) {
             throw new RuntimeException("로그인이 필요합니다.");
         }
 
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByPlaceIdAndUserId(placeId, userId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
         // 작성자 본인인지 확인

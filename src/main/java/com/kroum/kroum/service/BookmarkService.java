@@ -96,9 +96,8 @@ public class BookmarkService {
     public PlaceBookmarkDto getBookmark(Long placeId, HttpSession session) {
         int bookmarkCount = bookmarkRepository.countByPlace_PlaceId(placeId);
         boolean isBookmarked = placeService.isBookmarked(session, placeId);
-        PlaceBookmarkDto bookmark = new PlaceBookmarkDto(bookmarkCount, isBookmarked);
 
-        return bookmark;
+        return new PlaceBookmarkDto(bookmarkCount, isBookmarked);
     }
 
 }
