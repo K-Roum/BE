@@ -1,6 +1,7 @@
 package com.kroum.kroum.service;
 
 import com.kroum.kroum.dto.response.BookmarkResponseDto;
+import com.kroum.kroum.dto.response.PlaceBookmarkDto;
 import com.kroum.kroum.entity.Bookmark;
 import com.kroum.kroum.entity.Place;
 import com.kroum.kroum.entity.PlaceLanguage;
@@ -29,6 +30,7 @@ public class BookmarkService {
     private final PlaceRepository placeRepository;
     private final PlaceLanguageRepository placeLanguageRepository;
     private final UserRepository userRepository;
+    private final PlaceService placeService;
 
     @Transactional
     public void addBookmark(Long placeId, HttpSession session) {
@@ -89,6 +91,14 @@ public class BookmarkService {
                         b.getPlace().getFirstImageUrl()
                 ))
                 .toList();
+    }
+
+    public PlaceBookmarkDto getBookmark(Long placeId, HttpSession session) {
+        int bookmarkCount = bookmarkRepository.countByPlace_PlaceId(placeId);
+        boolean isBookmarked = placeService.isBookmarked(session, placeId);
+        PlaceBookmarkDto bookmark = new PlaceBookmarkDto(bookmarkCount, isBookmarked);
+
+        return bookmark;
     }
 
 }

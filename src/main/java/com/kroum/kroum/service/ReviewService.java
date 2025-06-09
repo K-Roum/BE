@@ -68,7 +68,7 @@ public class ReviewService {
         // 수정
         review.setContent(request.getContent());
         review.setRating(request.getRating());
-        review.setCreatedAt(LocalDateTime.now()); // 생성일 재설정이 아닌 updatedAt이 더 맞을 수도 있음
+        // review.setCreatedAt(LocalDateTime.now()); // 생성일 재설정이 아닌 updatedAt이 더 맞을 수도 있음
 
         reviewRepository.save(review);
     }

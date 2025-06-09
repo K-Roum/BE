@@ -15,6 +15,7 @@ import com.kroum.kroum.util.SearchInputAnalyzer;
 import com.kroum.kroum.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PlaceService {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -80,7 +82,10 @@ public class PlaceService {
     }
 
     public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
+        log.info("세션 id  = {}", session.getId());
         Long userId = SessionUtil.getLoginUserId(session);
+
+        log.info("userId = {}", userId);
 
         List<Long> placeIds = ids.stream()
                 .map(ContentIdDto::getContentId)

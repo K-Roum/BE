@@ -2,6 +2,7 @@ package com.kroum.kroum.controller;
 
 import com.kroum.kroum.dto.response.ApiResponseDto;
 import com.kroum.kroum.dto.response.BookmarkResponseDto;
+import com.kroum.kroum.dto.response.PlaceBookmarkDto;
 import com.kroum.kroum.service.BookmarkService;
 import com.kroum.kroum.util.SessionUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,11 +37,13 @@ public class BookmarkController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PostMapping("/{placeId}")
-    public ResponseEntity<ApiResponseDto> addBookmark(@PathVariable Long placeId, HttpSession session) {
+    public ResponseEntity<PlaceBookmarkDto> addBookmark(@PathVariable Long placeId, HttpSession session) {
         bookmarkService.addBookmark(placeId, session);
+
+        PlaceBookmarkDto response = bookmarkService.getBookmark(placeId, session);
         log.info("북마크 추가 컨트롤러 요청");
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "찜 목록에 추가되었습니다."));
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "찜 삭제 / 구현 완료", description = "찜이 된 버튼을 누르면 찜이 삭제됨")
@@ -51,11 +54,13 @@ public class BookmarkController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @DeleteMapping("/{placeId}")
-    public ResponseEntity<ApiResponseDto> deleteBookmark(@PathVariable Long placeId, HttpSession session) {
+    public ResponseEntity<PlaceBookmarkDto> deleteBookmark(@PathVariable Long placeId, HttpSession session) {
 
         bookmarkService.deleteBookmark(placeId, session);
 
-        return ResponseEntity.ok(new ApiResponseDto(true, "찜 목록에서 삭제되었습니다."));
+        PlaceBookmarkDto response = bookmarkService.getBookmark(placeId, session);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "요약된 찜 목록 가져오기 / 구현 완료", description = "마이페이지를 누를 떄 내부 API로 사용")
