@@ -2,22 +2,19 @@ package com.kroum.kroum.service;
 
 import com.kroum.kroum.dto.request.PasswordChangeRequestDto;
 import com.kroum.kroum.dto.request.ProfileUpdateRequestDto;
-import com.kroum.kroum.dto.response.BookmarkResponseDto;
-import com.kroum.kroum.dto.response.MyPageResponseDto;
-import com.kroum.kroum.dto.response.ProfileResponseDto;
-import com.kroum.kroum.dto.response.ReviewSummaryResponseDto;
+import com.kroum.kroum.repository.projection.PlaceDetailsProjection;
+
+import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.entity.Bookmark;
 import com.kroum.kroum.entity.EmailVerification;
-import com.kroum.kroum.repository.BookmarkRepository;
-import com.kroum.kroum.repository.EmailVerificationRepository;
-import com.kroum.kroum.repository.ReviewRepository;
+import com.kroum.kroum.repository.*;
+import com.kroum.kroum.util.SessionUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import com.kroum.kroum.dto.request.LoginRequestDto;
 import com.kroum.kroum.dto.request.SignupRequestDto;
 import com.kroum.kroum.entity.User;
 import com.kroum.kroum.exception.*;
-import com.kroum.kroum.repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,6 +36,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final ReviewRepository reviewRepository;
+    private final PlaceLanguageRepository placeLanguageRepository;
     private final BookmarkRepository bookmarkRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
@@ -258,6 +257,37 @@ public class UserService {
     }
 
 
+    public PlaceDetailsByPlaceIdResponseDto getPlaceDetailsByPlaceId(Long placeId, HttpSession session) {
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        // 1. 장소 기본 정보 (Projection → DTO 변환)
+        PlaceDetailsProjection projection = placeLanguageRepository.findPlaceDetailsByPlaceId(placeId);
+
+        // 2. 리뷰 정보
+        Double avgRating = reviewRepository.findAverageRatingByPlaceId(placeId);
+        double roundedAvg = (avgRating != null) ? Math.round(avgRating * 10.0) / 10.0 : 0.0;
+        Long reviewCount = reviewRepository.countByPlace_PlaceId(placeId);
+        List<PlaceReviewDto> reviews = reviewRepository.findPlaceReviewDtosByPlaceId(placeId);
+        PlaceReviewsResponseDto reviewsDto = new PlaceReviewsResponseDto(reviewCount, roundedAvg, reviews);
+
+        // 3. 찜 정보
+        int bookmarkCount = bookmarkRepository.countByPlace_PlaceId(placeId);
+        boolean isBookmarked = (userId != null) && bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
+        PlaceBookmarkDto bookmarkDto = new PlaceBookmarkDto(bookmarkCount, isBookmarked);
+
+        // 4. 조립
+        PlaceDetailsResponseDto placeDetails = new PlaceDetailsResponseDto(reviewsDto, bookmarkDto);
+
+        return PlaceDetailsByPlaceIdResponseDto.builder()
+                .placeId(projection.getPlaceId())
+                .placeName(projection.getPlaceName())
+                .description(projection.getDescription())
+                .address(projection.getAddress())
+                .firstImageUrl(projection.getFirstImageUrl())
+                .placeDetails(placeDetails)
+                .bookmarked(isBookmarked)
+                .build();
+    }
 
 
 

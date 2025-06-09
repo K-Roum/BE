@@ -1,8 +1,10 @@
 package com.kroum.kroum.repository;
 
+import com.kroum.kroum.dto.response.PlaceDetailsByPlaceIdResponseDto;
 import com.kroum.kroum.dto.response.PlaceSearchResponseDto;
 import com.kroum.kroum.entity.PlaceLanguage;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
+import com.kroum.kroum.repository.projection.PlaceDetailsProjection;
 import com.kroum.kroum.repository.projection.PlaceImagePreviewProjection;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -87,5 +89,31 @@ ORDER BY distance ASC
             LIMIT 3
             """, nativeQuery = true)
     List<PlaceImagePreviewProjection> findRandomPreviewsByLanguage(@Param("languageCode") String languageCode);
+
+    /*@Query(value = """
+SELECT 
+    p.first_image_url AS firstImageUrl,
+    pl.place_name AS placeName,
+    pl.description AS description,
+    pl.address AS address,
+    p.place_id AS placeId
+FROM place p
+JOIN place_language pl ON pl.place_id = p.place_id
+WHERE p.place_id = :placeId
+""", nativeQuery = true)
+    PlaceDetailsByPlaceIdResponseDto findPlaceDetailsByPlaceId(Long placeId);*/
+    @Query(value = """
+SELECT 
+    p.first_image_url AS firstImageUrl,
+    pl.place_name AS placeName,
+    pl.description AS description,
+    pl.address AS address,
+    p.place_id AS placeId
+FROM place p
+JOIN place_language pl ON pl.place_id = p.place_id
+WHERE p.place_id = :placeId
+""", nativeQuery = true)
+    PlaceDetailsProjection findPlaceDetailsByPlaceId(@Param("placeId") Long placeId);
+
 }
 
