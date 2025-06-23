@@ -16,5 +16,7 @@ public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Lo
 
     Optional<SearchHistory> findByUserIdAndSearchText(Long userId, String searchText);
 
+    void deleteAllByUserId(Long userId);
+
 
 }

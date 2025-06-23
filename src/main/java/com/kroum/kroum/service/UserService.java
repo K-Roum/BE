@@ -9,6 +9,7 @@ import com.kroum.kroum.entity.Bookmark;
 import com.kroum.kroum.entity.EmailVerification;
 import com.kroum.kroum.repository.*;
 import com.kroum.kroum.util.SessionUtil;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import com.kroum.kroum.dto.request.LoginRequestDto;
@@ -40,6 +41,7 @@ public class UserService {
     private final BookmarkRepository bookmarkRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
+    private final SearchHistoryRepository searchHistoryRepository;
 
     public void signUp(SignupRequestDto request) {
 
@@ -217,10 +219,17 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("해당 유저가 존재하지 않습니다.");
         }
+
+        // 찜, 검색기록, 리뷰 등 먼저 삭제
+        bookmarkRepository.deleteAllByUserId(userId);
+        searchHistoryRepository.deleteAllByUserId(userId);
+        reviewRepository.deleteAllByUserId(userId);
+        // 필요한 연관 엔티티 다 삭제 후
 
         userRepository.deleteById(userId);
     }

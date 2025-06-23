@@ -21,5 +21,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
     boolean existsByUserIdAndPlace_PlaceId(Long userId, Long placeId);
 
+    void deleteAllByUserId(Long userId);
 
 }
