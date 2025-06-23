@@ -9,6 +9,7 @@ import com.kroum.kroum.dto.response.ReviewSummaryResponseDto;
 import com.kroum.kroum.entity.Place;
 import com.kroum.kroum.entity.Review;
 import com.kroum.kroum.entity.User;
+import com.kroum.kroum.exception.InvalidRequestException;
 import com.kroum.kroum.repository.PlaceRepository;
 import com.kroum.kroum.repository.ReviewRepository;
 import com.kroum.kroum.repository.UserRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,11 @@ public class ReviewService {
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("해당 장소를 찾을 수 없습니다."));
+
+        Optional<Review> check = reviewRepository.findByPlaceIdAndUserId(placeId, userId);
+
+        if (check.isPresent())
+            throw new InvalidRequestException("이미 해당 장소에 대한 리뷰가 존재합니다. 리뷰를 수정해주세요.");
 
         Review review = Review.builder()
                 .user(user)
