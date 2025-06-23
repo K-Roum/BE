@@ -169,7 +169,7 @@ public class UserService {
             throw new InvalidRequestException("아이디와 이메일이 일치하지 않습니다.");
         }
 
-        // 2. 이메일 인증 여부 확인
+       /* // 2. 이메일 인증 여부 확인
         EmailVerification verification = emailVerificationRepository
                 .findTopByEmailOrderByCreatedAtDesc(email)
                 .orElseThrow(() -> new InvalidRequestException("이메일 인증 정보가 없습니다."));
@@ -181,7 +181,7 @@ public class UserService {
         if (verification.getExpiresAt() != null &&
                 verification.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new InvalidRequestException("이메일 인증이 만료되었습니다. 다시 인증해주세요.");
-        }
+        }*/
 
         // 3. 임시 비밀번호 발급 및 저장
         String tempPassword = generateTempPassword(); // 6~8자리 숫자 or 문자열 생성
