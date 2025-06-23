@@ -1,6 +1,5 @@
 package com.kroum.kroum.repository;
 
-import com.kroum.kroum.dto.PlaceDto;
 import com.kroum.kroum.dto.response.PlaceDetailsByPlaceIdResponseDto;
 import com.kroum.kroum.dto.response.PlaceSearchResponseDto;
 import com.kroum.kroum.entity.PlaceLanguage;
@@ -116,29 +115,7 @@ WHERE p.place_id = :placeId
 """, nativeQuery = true)
     PlaceDetailsProjection findPlaceDetailsByPlaceId(@Param("placeId") Long placeId);
 
-    @Query("""
-SELECT new com.kroum.kroum.dto.PlaceDto(
-    null,
-    p.latitude,
-    p.longitude,
-    p.firstImageUrl,
-    pl.placeName,
-    pl.description,
-    pl.address,
-    false,
-    p.placeId
-)
-FROM Place p
-LEFT JOIN PlaceLanguage pl ON pl.place = p AND pl.language.languageCode = :languageCode
-WHERE p.placeId = :placeId
-""")
-    PlaceDto findPlaceByPlaceIdWithLanguage(@Param("placeId") Long placeId,
-                                            @Param("languageCode") String languageCode);
-
-
-
-
-
+    Optional<PlaceLanguage> findByPlace_PlaceId(Long placeId);
 
 
 

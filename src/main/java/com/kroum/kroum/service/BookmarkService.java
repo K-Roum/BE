@@ -47,9 +47,8 @@ public class BookmarkService {
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new NoSuchElementException("장소를 찾을 수 없습니다."));
-        PlaceLanguage placeLanguage = placeLanguageRepository.findByPlace_PlaceIdAndLanguage_LanguageCode(
-                placeId, "ko"
-        ).orElseThrow(() -> new NoSuchElementException("다국어 장소 정보를 찾을 수 없습니다."));
+        PlaceLanguage placeLanguage = placeLanguageRepository.findByPlace_PlaceId(placeId)
+                .orElseThrow(() -> new NoSuchElementException("다국어 장소 정보를 찾을 수 없습니다."));
 
         // Bookmark 생성
         Bookmark bookmark = new Bookmark();
