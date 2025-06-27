@@ -1,5 +1,6 @@
 package com.kroum.kroum.service;
 
+import com.kroum.kroum.dto.PlaceDto;
 import com.kroum.kroum.dto.request.PlaceSearchRequestDto;
 import com.kroum.kroum.dto.response.*;
 import com.kroum.kroum.entity.Place;
@@ -10,22 +11,25 @@ import com.kroum.kroum.repository.PlaceLanguageRepository;
 import com.kroum.kroum.repository.PlaceRepository;
 import com.kroum.kroum.repository.ReviewRepository;
 import com.kroum.kroum.repository.projection.NearbyPlaceProjection;
+import com.kroum.kroum.repository.projection.PlaceImagePreviewProjection;
+import com.kroum.kroum.util.SearchInputAnalyzer;
 import com.kroum.kroum.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PlaceService {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -33,6 +37,10 @@ public class PlaceService {
     private final PlaceLanguageRepository placeLanguageRepository;
     private final ReviewRepository reviewRepository;
     private final BookmarkRepository bookmarkRepository;
+
+    private final ReviewService reviewService;
+
+    private final SearchInputAnalyzer searchInputAnalyzer;
 
     // 프론트로부터 받은 검색 요청 DTO를 추가 정보를 덧붙여서 AI 서버에게 ID 리턴해달라고 요청하는 메서드
     public List<ContentIdDto> getRecommendedPlaceIds(PlaceSearchRequestDto request) {
@@ -79,7 +87,10 @@ public class PlaceService {
     }
 
     public List<PlaceSearchResponseDto> getPlacesByIds(List<ContentIdDto> ids, HttpSession session) {
+        log.info("세션 id  = {}", session.getId());
         Long userId = SessionUtil.getLoginUserId(session);
+
+        log.info("userId = {}", userId);
 
         List<Long> placeIds = ids.stream()
                 .map(ContentIdDto::getContentId)
@@ -113,7 +124,7 @@ public class PlaceService {
     public PlaceReviewsResponseDto getReviewsByPlaceId(Long placeId) {
         Double avg = getAverageRating(placeId);
         Long totalCount = reviewRepository.countByPlace_PlaceId(placeId);
-        List<PlaceReviewDto> placeReviews = reviewRepository.findDtoByPlaceId(placeId);
+        List<PlaceReviewDto> placeReviews = reviewRepository.findPlaceReviewDtosByPlaceId(placeId);
         PlaceReviewsResponseDto responseDto = new PlaceReviewsResponseDto(totalCount, avg, placeReviews);
 
         return responseDto;
@@ -139,7 +150,7 @@ public class PlaceService {
         return bookmarkRepository.existsByUser_IdAndPlace_PlaceId(userId, placeId);
     }
 
-    public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+    /*public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
         Place originPlace = placeRepository.findById(placeId)
                 .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
 
@@ -166,7 +177,54 @@ public class PlaceService {
                     );
                 })
                 .toList();
+    }*/
+
+    public List<NearbyPlaceResponseDto> getNearbyPlaces(Long placeId, String langCode, HttpSession session) {
+        Place originPlace = placeRepository.findById(placeId)
+                .orElseThrow(() -> new InvalidRequestException("기준 장소를 찾을 수 없습니다."));
+
+        List<NearbyPlaceProjection> raw = placeLanguageRepository.findNearbyPlacesWithinDistance(
+                originPlace.getLatitude(), originPlace.getLongitude(), langCode, placeId
+        );
+
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        Set<Long> bookmarkedPlaceIds = userId != null
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of();
+
+        // 그룹핑: 거리 구간별로
+        Map<String, List<NearbyPlaceProjection>> grouped = raw.stream()
+                .collect(Collectors.groupingBy(
+                        p -> {
+                            double d = p.getDistance();
+                            if (d < 1000) return "0~1km";
+                            else if (d < 3000) return "1~3km";
+                            else if (d < 5000) return "3~5km";
+                            else if (d < 10000) return "5~10km";
+                            else return "10~20km";
+                        },
+                        LinkedHashMap::new, // 순서 유지
+                        Collectors.toList()
+                ));
+
+        // 각 그룹에서 최대 10개씩, 평탄화 후 Dto로 변환
+        return grouped.values().stream()
+                .flatMap(list -> list.stream().limit(10))
+                .map(p -> {
+                    boolean isBookmarked = bookmarkedPlaceIds.contains(p.getPlaceId());
+                    return new NearbyPlaceResponseDto(
+                            new PlaceSearchResponseDto(
+                                    p.getLatitude(), p.getLongitude(), p.getFirstImageUrl(),
+                                    p.getPlaceName(), p.getDescription(), p.getAddress(),
+                                    isBookmarked, p.getPlaceId()
+                            ),
+                            p.getDistance()
+                    );
+                })
+                .toList();
     }
+
 
 
     public PlaceDetailsWithNearbyPlacesResponseDto getPlaceDetailsWithNearbyPlaces(Long placeId, String langCode, HttpSession session) {
@@ -187,6 +245,93 @@ public class PlaceService {
         // 5. 최종 응답 조립
         return new PlaceDetailsWithNearbyPlacesResponseDto(details, nearby);
     }
+
+
+    public List<PlaceImagePreviewResponseDto> getPlaceImagePreviews(String languageCode) {
+        List<PlaceImagePreviewProjection> projections =
+                placeLanguageRepository.findRandomPreviewsByLanguage(languageCode);
+
+        return projections.stream()
+                .map(p -> new PlaceImagePreviewResponseDto(p.getPlaceId(), p.getImageUrl()))
+                .toList();
+    }
+
+    public String preprocessSearchQuery(String rawQuery) {
+        if (searchInputAnalyzer.isBadSentence(rawQuery)) {
+            throw new InvalidRequestException("검색할 수 없는 문장입니다. 다른 문장을 입력해주세요.");
+        }
+
+        return searchInputAnalyzer.sanitize(rawQuery);
+    }
+
+    public PlaceDetailsByImageResponseDto getPlaceDetailsWithEverythingByImage(Long placeId,
+                                                                               String languageCode,
+                                                                               HttpSession session) {
+        // 1. 리뷰 정보
+        PlaceReviewsResponseDto reviews = reviewService.getPlaceReviewList(placeId);
+
+        Long userId = SessionUtil.getLoginUserId(session);
+        boolean Bookmarked = bookmarkRepository.existsByUserIdAndPlace_PlaceId(userId, placeId);
+        PlaceBookmarkDto bookmarkInfo = new PlaceBookmarkDto();
+        bookmarkInfo.setBookmarked(Bookmarked);
+
+        // 3. 장소 정보 (언어 필터 포함)
+        PlaceDto placeDto = placeLanguageRepository.findPlaceByPlaceIdWithLanguage(placeId, languageCode);
+        if (placeDto == null) {
+            throw new InvalidRequestException("해당 언어의 장소 정보를 찾을 수 없습니다.");
+        }
+
+        // 4. 상세 정보 세팅
+        PlaceDetailsResponseDto details = new PlaceDetailsResponseDto(reviews, bookmarkInfo);
+        placeDto.setPlaceDetailsResponseDto(details);
+        placeDto.setBookmarked(bookmarkInfo.isBookmarked());
+
+        // 5. 주변 장소 조회
+        List<NearbyPlaceProjection> rawNearby = placeLanguageRepository.findNearbyPlacesWithinDistance(
+                placeDto.getLatitude(), placeDto.getLongitude(), languageCode, placeId
+        );
+
+        Set<Long> bookmarkedIds = (userId != null)
+                ? new HashSet<>(bookmarkRepository.findPlaceIdsByUserId(userId))
+                : Set.of();
+
+        Map<String, List<NearbyPlaceProjection>> grouped = rawNearby.stream()
+                .collect(Collectors.groupingBy(
+                        p -> {
+                            double d = p.getDistance();
+                            if (d < 1000) return "0~1km";
+                            else if (d < 3000) return "1~3km";
+                            else if (d < 5000) return "3~5km";
+                            else if (d < 10000) return "5~10km";
+                            else return "10~20km";
+                        },
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        List<NearbyPlaceImageResponseDto> nearbyList = grouped.values().stream()
+                .flatMap(list -> list.stream().limit(10))
+                .map(p -> {
+                    PlaceDto nearbyPlaceDto = PlaceDto.builder()
+                            .placeDetailsResponseDto(null)
+                            .latitude(p.getLatitude())
+                            .longitude(p.getLongitude())
+                            .firstImageUrl(p.getFirstImageUrl())
+                            .placeName(p.getPlaceName())
+                            .description(p.getDescription())
+                            .address(p.getAddress())
+                            .bookmarked(bookmarkedIds.contains(p.getPlaceId()))
+                            .placeId(p.getPlaceId())
+                            .build();
+                    return new NearbyPlaceImageResponseDto(nearbyPlaceDto, p.getDistance());
+                })
+                .toList();
+
+        // 6. 최종 응답 반환
+        return new PlaceDetailsByImageResponseDto(placeDto, nearbyList);
+    }
+
+
 
 
 }
