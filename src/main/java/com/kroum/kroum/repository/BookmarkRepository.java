@@ -17,6 +17,10 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     @Query("SELECT b.place.placeId FROM Bookmark b WHERE b.user.id = :userId")
     List<Long> findPlaceIdsByUserId(@Param("userId") Long userId);
 
+    List<Bookmark> findByUser_Id(Long userId);
 
+    boolean existsByUserIdAndPlace_PlaceId(Long userId, Long placeId);
+
+    void deleteAllByUserId(Long userId);
 
 }

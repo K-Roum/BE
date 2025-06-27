@@ -36,4 +36,9 @@ public class SearchHistory {
         this.userId = userId;
         this.searchText = searchText;
     }
+
+    public void updateCreatedAt() {
+        this.createdAt = LocalDateTime.now();
+    }
+
 }
